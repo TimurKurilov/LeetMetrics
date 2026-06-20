@@ -3,6 +3,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login, logout
 from django.views import View
 
+def startpage(request):
+    return render(request, "accounts/startpage.html")
+    
 class RegisterView(View):
     def get(self, request):
         form = UserCreationForm()
@@ -28,8 +31,3 @@ class LoginView(View):
             login(request, user)
             return redirect('/')
         return render(request, 'accounts/login.html', {'form': form})
-    
-
-def logout_view(request):
-    logout(request)
-    return render(request, "accounts/logout.html")
