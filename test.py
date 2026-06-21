@@ -1,22 +1,71 @@
-import json
-
 import requests
+import json
 
 url = "https://leetcode.com/graphql"
 
+headers = {
+    "User-Agent": "Mozilla/5.0",
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+}
+
 query = """
+query userContestRankingInfo($username: String!) {
+  userContestRanking(username: $username) {
+    attendedContestsCount
+    rating
+    globalRanking
+    totalParticipants
+    topPercentage
+  }
+  userContestRankingHistory(username: $username) {
+    attended
+    trendDirection
+    problemsSolved
+    totalProblems
+    finishTimeInSeconds
+    rating
+    ranking
+    contest {
+      title
+      startTime
+    }
+  }
+}
+"""
+
+variables = {"username": "vetor"}
+
+response = requests.post(
+    url,
+    headers=headers,
+    json={
+        "query": query,
+        "variables": variables
+    }
+)
+
+# 1. СНАЧАЛА проверяем статус
+print("STATUS:", response.status_code)
+
+# 2. Смотрим сырой ответ (это самое важное для дебага)
+print("RAW RESPONSE:")
+print(response.text[:500])
+
+# 3. Пытаемся парсить JSON только если это реально JSON
+try:
+    data = response.json()
+    print("\nPARSED JSON:")
+    print(json.dumps(data, indent=4, ensure_ascii=False))
+except Exception as e:
+    print("\nJSON PARSE ERROR:", e)
+
+
+# второй запрос
+query2 = """
 query userPublicProfile($username: String!) {
   matchedUser(username: $username) {
-    contestBadge {
-      name
-      expired
-      hoverText
-      icon
-    }
     username
-    githubUrl
-    twitterUrl
-    linkedinUrl
     profile {
       ranking
       userAvatar
@@ -25,35 +74,34 @@ query userPublicProfile($username: String!) {
       school
       websites
       countryName
-      company
-      jobTitle
-      skillTags
-      postViewCount
-      postViewCountDiff
       reputation
-      reputationDiff
-      solutionCount
-      solutionCountDiff
-      categoryDiscussCount
-      categoryDiscussCountDiff
+    }
+    submitStats {
+      acSubmissionNum {
+        difficulty
+        count
+      }
     }
   }
 }
 """
 
-variables = {"username": "hostlessbtw"}
-
-response = requests.post(
+response2 = requests.post(
     url,
+    headers=headers,
     json={
-        "query": query,
+        "query": query2,
         "variables": variables
     }
 )
 
-data = response.json()
+print("\nSTATUS 2:", response2.status_code)
+print("RAW RESPONSE 2:")
+print(response2.text[:500])
 
-#print(print(json.dumps(data, indent=4, ensure_ascii=False)))
-
-user = data["data"]["matchedUser"]
-username = user["username"]
+try:
+    data2 = response2.json()
+    print("\nPARSED JSON 2:")
+    print(json.dumps(data2, indent=4, ensure_ascii=False))
+except Exception as e:
+    print("\nJSON PARSE ERROR 2:", e)

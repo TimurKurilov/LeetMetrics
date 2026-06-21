@@ -1,15 +1,5 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Выход</title>
-</head>
-<body>
-    <h1>logged out</h1>
-    
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Log Out</button>
-    </form>
-</body>
-</html>
+<h1>Вы уверены, что хотите выйти?</h1>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Да, выйти</button>
+</form>

@@ -31,3 +31,9 @@ class LoginView(View):
             login(request, user)
             return redirect('/')
         return render(request, 'accounts/login.html', {'form': form})
+
+class MyLogoutView(View):
+    http_method_names = ['get', 'post', 'options']
+    def get(self, request):
+        logout(request)
+        redirect("login")
