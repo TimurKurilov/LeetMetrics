@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'dashboard.apps.DashboardConfig',
     'leetcode.apps.LeetcodeConfig',
     'accounts.apps.AccountsConfig',
     'django.contrib.admin',

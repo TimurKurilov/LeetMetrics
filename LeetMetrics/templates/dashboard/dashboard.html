@@ -1,0 +1,11 @@
+<h1>Профиль: {{ data.realname }}</h1>
+<p>Рейтинг: {{ data.ranking }}</p>
+<p>Репутация: {{ data.reputation }}</p>
+
+<h3>Решенные задачи:</h3>
+<ul>
+    <li>Легкие: {{ data.submission.easy }}</li>
+    <li>Средние: {{ data.submission.medium }}</li>
+    <li>Сложные: {{ data.submission.hard }}</li>
+    <li>Всего: {{ data.submission.total }}</li>
+</ul>

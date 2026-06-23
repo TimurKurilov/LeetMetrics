@@ -24,3 +24,4 @@ typing_extensions==4.15.0
 tzdata==2026.2
 ujson==5.13.0
 zope.interface==8.5
+requests==2.34.2
