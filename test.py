@@ -18,20 +18,6 @@ query userContestRankingInfo($username: String!) {
     totalParticipants
     topPercentage
   }
-  userContestRankingHistory(username: $username) {
-    attended
-    trendDirection
-    problemsSolved
-    totalProblems
-    finishTimeInSeconds
-    rating
-    ranking
-    contest {
-      title
-      startTime
-    }
-  }
-}
 """
 
 variables = {"username": "vetor"}

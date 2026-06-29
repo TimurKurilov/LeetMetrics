@@ -9,3 +9,12 @@
     <li>Сложные: {{ data.submission.hard }}</li>
     <li>Всего: {{ data.submission.total }}</li>
 </ul>
+
+<h3>Контесты:</h3>
+<ul>
+    <li>Участвовал в контестах: {{ contest_data.attended_contests }}</li>
+    <li>Contest Rating: {{ contest_data.contest_rating }}</li>
+    <li>Глобальный ранг: {{ contest_data.global_ranking }}</li>
+    <li>Всего участников: {{ contest_data.total_participants }}</li>
+    <li>Топ %: {{ contest_data.top_percentage }}%</li>
+</ul>

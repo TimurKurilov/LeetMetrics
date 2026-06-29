@@ -12,11 +12,6 @@ class LeetCodeUserAccount(models.Model):
     easy = models.IntegerField()
     medium = models.IntegerField()
     hard = models.IntegerField()
-    
-    #contest_rating = models.FloatField(null=True, blank=True)
-    #contest_global_ranking = models.IntegerField(null=True, blank=True)
-    #attended_contests = models.IntegerField(default=0)
-    #top_percentage = models.FloatField(null=True, blank=True)
 
     
     avatar = models.URLField(blank=True)
@@ -25,3 +20,16 @@ class LeetCodeUserAccount(models.Model):
     
     def __str__(self):
         return self.username
+    
+class LeetCodeUserContestStats(models.Model):
+    account = models.OneToOneField(
+        LeetCodeUserAccount,
+        on_delete=models.CASCADE,
+        related_name="contest_stats"
+    )
+    
+    contest_rating = models.FloatField(null=True, blank=True)
+    global_ranking = models.IntegerField(null=True, blank=True)
+    attended_contests = models.IntegerField(default=0)
+    total_participants = models.IntegerField(default=0)
+    top_percentage = models.FloatField(null=True, blank=True)
