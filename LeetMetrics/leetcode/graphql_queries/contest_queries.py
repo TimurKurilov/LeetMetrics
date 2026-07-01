@@ -7,4 +7,5 @@ query userContestRankingInfo($username: String!) {
     totalParticipants
     topPercentage
   }
+}
 """

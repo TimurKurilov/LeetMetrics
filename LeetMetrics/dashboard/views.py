@@ -7,4 +7,4 @@ def dashboard(request, username):
     
     save_leetcode_userdata(username, profile_data)
     save_leetcode_usercontest(username, contest_data)
-    return render(request, template_name="dashboard/dashboard.html", context={"data": data, "contest_data": contest_data})
+    return render(request, template_name="dashboard/dashboard.html", context={"data": profile_data, "contest_data": contest_data})

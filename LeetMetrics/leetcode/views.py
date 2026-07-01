@@ -26,7 +26,7 @@ def leetcode_userdata(username):
     total = counts.get("All", 0)
     
     data = {
-        "realname": real_name,
+        "real_name": real_name,
         "ranking": ranking,
         "reputation": reputation,
         "avatar": avatar,
@@ -66,6 +66,7 @@ def save_leetcode_userdata(username, data):
     return save_data
 
 def save_leetcode_usercontest(username, data):
+    account = LeetCodeUserAccount.objects.get(username=username)
     local_data = data.copy()
-    save_data, created = LeetCodeUserContestStats.objects.update_or_create(username=username, defaults={**local_data})
+    save_data, created = LeetCodeUserContestStats.objects.update_or_create(account=account, defaults={**local_data})
     return save_data
