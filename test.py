@@ -18,9 +18,10 @@ query userContestRankingInfo($username: String!) {
     totalParticipants
     topPercentage
   }
+}
 """
 
-variables = {"username": "vetor"}
+variables = {"username": "hostlessbtw"}
 
 response = requests.post(
     url,

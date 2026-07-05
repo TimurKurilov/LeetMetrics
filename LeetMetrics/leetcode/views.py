@@ -44,20 +44,30 @@ def leetcode_usercontest(username):
     fetcher = LeetCodeContestFetcher()
     raw_data = fetcher.fetch_contest(username)
     matched = raw_data["data"]["userContestRanking"]
-    attendedcount = matched["attendedContestsCount"]
-    rating = matched["rating"]
-    global_ranking = matched["globalRanking"]
-    totalparticipants = matched["totalParticipants"]
-    toppercentage = matched["topPercentage"]
+    if not matched:
+        contest_data = {
+            "attended_contests": None,
+            "contest_rating": None,
+            "global_ranking": None,
+            "total_participants": None,
+            "top_percentage": None,
+        }
+        return contest_data
+    else:
+        attendedcount = matched["attendedContestsCount"]
+        rating = matched["rating"]
+        global_ranking = matched["globalRanking"]
+        totalparticipants = matched["totalParticipants"]
+        toppercentage = matched["topPercentage"]
     
-    contest_data = {
-        "attended_contests": attendedcount,
-        "contest_rating": rating,
-        "global_ranking": global_ranking,
-        "total_participants": totalparticipants,
-        "top_percentage": toppercentage,
-    }
-    return contest_data
+        contest_data = {
+            "attended_contests": attendedcount,
+            "contest_rating": rating,
+            "global_ranking": global_ranking,
+            "total_participants": totalparticipants,
+            "top_percentage": toppercentage,
+        }
+        return contest_data
 
 def save_leetcode_userdata(username, data):
     local_data = data.copy()

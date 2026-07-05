@@ -29,11 +29,11 @@ class LeetCodeUserContestStats(models.Model):
         related_name="contest_stats"
     )
     
-    contest_rating = models.FloatField(null=True, blank=True)
-    global_ranking = models.IntegerField(null=True, blank=True)
-    attended_contests = models.IntegerField(default=0)
-    total_participants = models.IntegerField(default=0)
-    top_percentage = models.FloatField(null=True, blank=True)
+    contest_rating = models.FloatField(default=None, null=True, blank=True)
+    global_ranking = models.IntegerField(default=None, null=True, blank=True)
+    attended_contests = models.IntegerField(default=0, null=True)
+    total_participants = models.IntegerField(default=0, null=True)
+    top_percentage = models.FloatField(default=None, null=True, blank=True)
     
     
 class DailyStatsSnapshot(models.Model):
@@ -55,8 +55,8 @@ class DailyStatsSnapshot(models.Model):
 
     contest_rating = models.FloatField(null=True, blank=True)
     global_ranking = models.IntegerField(null=True, blank=True)
-    attended_contests = models.IntegerField(default=0)
-    total_participants = models.IntegerField(default=0)
+    attended_contests = models.IntegerField(default=0, null=True)
+    total_participants = models.IntegerField(default=0, null=True)
     top_percentage = models.FloatField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
