@@ -1,3 +1,5 @@
+import random
+from datetime import timedelta
 from leetcode.models import DailyStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 from django.utils import timezone
@@ -29,3 +31,67 @@ def create_daily_snapshot(username):
             "top_percentage": contest.top_percentage if contest else None,
         }
     )
+    
+def generate_fake_snapshots(username, days=90):
+    account = LeetCodeUserAccount.objects.select_related(
+        "contest_stats"
+    ).get(username=username)
+
+    contest = account.contest_stats
+
+    last_snapshot = (
+        DailyStatsSnapshot.objects.filter(account=account)
+        .order_by("-date")
+        .first()
+    )
+
+    if not last_snapshot:
+        raise ValueError(
+            "Сначала создайте хотя бы один настоящий DailyStatsSnapshot."
+        )
+
+    current_date = last_snapshot.date
+
+    ranking = last_snapshot.ranking
+    reputation = last_snapshot.reputation
+
+    easy = last_snapshot.easy
+    medium = last_snapshot.medium
+    hard = last_snapshot.hard
+
+    contest_rating = last_snapshot.contest_rating
+    global_ranking = last_snapshot.global_ranking
+    attended_contests = last_snapshot.attended_contests
+    total_participants = last_snapshot.total_participants
+    top_percentage = last_snapshot.top_percentage
+
+    for _ in range(days):
+        current_date += timedelta(days=1)
+
+        easy += random.randint(0, 2)
+        medium += random.randint(0, 2)
+        hard += random.randint(0, 1)
+
+        total = easy + medium + hard
+
+        ranking -= random.randint(0, 5)
+        contest_rating += random.randint(-10, 20)
+
+        DailyStatsSnapshot.objects.create(
+            account=account,
+            date=current_date,
+
+            ranking=ranking,
+            reputation=reputation,
+
+            total=total,
+            easy=easy,
+            medium=medium,
+            hard=hard,
+
+            contest_rating=contest_rating,
+            global_ranking=global_ranking,
+            attended_contests=attended_contests,
+            total_participants=total_participants,
+            top_percentage=top_percentage,
+        )
