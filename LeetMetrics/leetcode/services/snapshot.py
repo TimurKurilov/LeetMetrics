@@ -1,5 +1,7 @@
 import random
 from datetime import timedelta
+
+from django.http import JsonResponse
 from leetcode.models import DailyStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 from django.utils import timezone
@@ -13,7 +15,7 @@ def create_daily_snapshot(username):
     contest = account.contest_stats
     today = timezone.now().date()
     
-    DailyStatsSnapshot.objects.update_or_create(
+    DailyStatsSnapshot.objects.get_or_create(
         account=account,
         date=today,
         defaults={
@@ -37,6 +39,9 @@ def generate_fake_snapshots(username, days=90):
         "contest_stats"
     ).get(username=username)
 
+    existing_count = DailyStatsSnapshot.objects.filter(account=account).count()
+    if existing_count >= 90:
+        return None
     contest = account.contest_stats
 
     last_snapshot = (
@@ -69,13 +74,15 @@ def generate_fake_snapshots(username, days=90):
         current_date += timedelta(days=1)
 
         easy += random.randint(0, 2)
-        medium += random.randint(0, 2)
-        hard += random.randint(0, 1)
+        if random.randint(0,1) == 1:
+            medium += random.randint(0, 1)
+        else:
+            hard += random.randint(0, 1)
 
         total = easy + medium + hard
 
-        ranking -= random.randint(0, 5)
-        contest_rating += random.randint(-10, 20)
+        ranking -= random.randint(-3, 5)
+        contest_rating += random.randint(-10, 15)
 
         DailyStatsSnapshot.objects.create(
             account=account,
@@ -95,3 +102,36 @@ def generate_fake_snapshots(username, days=90):
             total_participants=total_participants,
             top_percentage=top_percentage,
         )
+        
+def dashboard_data(request, username):
+    generate_fake_snapshots(username=username)
+
+    account = LeetCodeUserAccount.objects.get(
+        username=username
+    )
+
+    snapshots = DailyStatsSnapshot.objects.filter(
+        account=account
+    ).order_by("date")
+
+    data = {
+        "dates": [],
+        "total": [],
+        "easy": [],
+        "medium": [],
+        "hard": [],
+        "rating": [],
+    }
+
+    for snapshot in snapshots:
+        data["dates"].append(
+            snapshot.date.strftime("%Y-%m-%d")
+        )
+
+        data["total"].append(snapshot.total)
+        data["easy"].append(snapshot.easy)
+        data["medium"].append(snapshot.medium)
+        data["hard"].append(snapshot.hard)
+        data["rating"].append(snapshot.contest_rating)
+
+    return JsonResponse(data)

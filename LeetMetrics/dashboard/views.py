@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from leetcode.services.snapshot import create_daily_snapshot
+from leetcode.services.snapshot import create_daily_snapshot, generate_fake_snapshots
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 
 def dashboard(request, username):
@@ -9,4 +9,5 @@ def dashboard(request, username):
     save_leetcode_usercontest(username, contest_data)
 
     create_daily_snapshot(username)
+    generate_fake_snapshots(username=username)
     return render(request, template_name="dashboard/dashboard.html", context={"data": profile_data, "contest_data": contest_data})
