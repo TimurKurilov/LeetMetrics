@@ -1,20 +1,96 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>LeetMetrics Dashboard</title>
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 400px;
+        }
+
+        .full {
+            grid-column: 1 / 3;
+        }
+    </style>
+</head>
+
+<body>
+
 <h1>Профиль: {{ data.realname }}</h1>
+
 <p>Рейтинг: {{ data.ranking }}</p>
 <p>Репутация: {{ data.reputation }}</p>
 
-<h3>Решенные задачи:</h3>
+
+<h2>Решенные задачи</h2>
+
 <ul>
-    <li>Легкие: {{ data.submission.easy }}</li>
-    <li>Средние: {{ data.submission.medium }}</li>
-    <li>Сложные: {{ data.submission.hard }}</li>
-    <li>Всего: {{ data.submission.total }}</li>
+    <li>Easy: {{ data.submission.easy }}</li>
+    <li>Medium: {{ data.submission.medium }}</li>
+    <li>Hard: {{ data.submission.hard }}</li>
+    <li>Total: {{ data.submission.total }}</li>
 </ul>
 
-<h3>Контесты:</h3>
+
+<h2>Контесты</h2>
+
 <ul>
-    <li>Участвовал в контестах: {{ contest_data.attended_contests }}</li>
-    <li>Contest Rating: {{ contest_data.contest_rating }}</li>
-    <li>Глобальный ранг: {{ contest_data.global_ranking }}</li>
-    <li>Всего участников: {{ contest_data.total_participants }}</li>
-    <li>Топ %: {{ contest_data.top_percentage }}%</li>
+    <li>Участий: {{ contest_data.attended_contests }}</li>
+    <li>Rating: {{ contest_data.contest_rating }}</li>
+    <li>Global Rank: {{ contest_data.global_ranking }}</li>
+    <li>Top: {{ contest_data.top_percentage }}%</li>
 </ul>
+
+
+
+<div class="charts">
+
+
+    <!-- Rating -->
+    <div class="chart-box full" id="rating-chart"></div>
+
+
+    <!-- Pie -->
+    <div class="chart-box" id="difficulty-chart"></div>
+
+
+    <!-- Stack -->
+    <div class="chart-box" id="solved-chart"></div>
+
+
+    <!-- Heatmap -->
+    <div class="chart-box full" id="heatmap-chart"></div>
+
+
+</div>
+
+
+
+<script>
+    const username = "{{ username }}";
+</script>
+
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+
+</body>
+</html>
