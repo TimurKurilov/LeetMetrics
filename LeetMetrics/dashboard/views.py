@@ -10,4 +10,4 @@ def dashboard(request, username):
 
     create_daily_snapshot(username)
     generate_fake_snapshots(username=username)
-    return render(request, template_name="dashboard/dashboard.html", context={"data": profile_data, "contest_data": contest_data})
+    return render(request, template_name="dashboard/dashboard.html", context={"data": profile_data, "contest_data": contest_data, "username": username})

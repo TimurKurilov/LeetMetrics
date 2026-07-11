@@ -1,96 +1,1158 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>LeetMetrics Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetCode Wrapped — {{ data.realname }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<style>
 
-    <!-- ECharts -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+:root{
+    --bg:#0A0C0B;
+    --ink:#F4F6F2;
+    --muted:#93A79B;
+    --faint:#5B6B62;
+    --line:rgba(244,246,242,.12);
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+    --easy:#4CAF6E;
+    --medium:#D9A441;
+    --hard:#E1584A;
+    --blue:#4A8FD1;
+    --gold:#E8C468;
 
-        .charts {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+    --font-display:'Manrope',var(--font-ui);
+}
 
-        .chart-box {
-            width: 100%;
-            height: 400px;
-        }
+*{ margin:0; padding:0; box-sizing:border-box; }
 
-        .full {
-            grid-column: 1 / 3;
-        }
-    </style>
+html,body{ height:100%; }
+
+body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-ui);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+}
+
+::selection{ background:var(--gold); color:#0A0C0B; }
+
+/* ============ chrome ============ */
+
+.chrome{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:20;
+}
+
+.story-bar{
+    position:absolute;
+    top:18px;
+    left:18px;
+    right:18px;
+    display:flex;
+    gap:6px;
+}
+
+.story-seg{
+    flex:1;
+    height:3px;
+    border-radius:2px;
+    background:rgba(244,246,242,.18);
+    overflow:hidden;
+}
+
+.story-seg i{
+    display:block;
+    height:100%;
+    width:0%;
+    background:var(--ink);
+    transition:width .35s ease;
+}
+
+.story-seg.done i{ width:100%; }
+.story-seg.active i{ width:100%; }
+
+.brand{
+    position:absolute;
+    top:38px;
+    left:18px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--muted);
+    pointer-events:auto;
+}
+
+.brand b{ color:var(--ink); font-weight:600; }
+
+.slide-count{
+    position:absolute;
+    top:38px;
+    right:18px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--muted);
+    pointer-events:auto;
+}
+
+.nav-arrow{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:rgba(10,12,11,.5);
+    backdrop-filter:blur(6px);
+    color:var(--ink);
+    font-size:16px;
+    cursor:pointer;
+    pointer-events:auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+}
+
+.nav-arrow:hover{ background:rgba(244,246,242,.12); }
+.nav-arrow.prev{ top:74px; }
+.nav-arrow.next{ bottom:74px; }
+
+.dots{
+    position:absolute;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    pointer-events:auto;
+}
+
+.dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:rgba(244,246,242,.25);
+    cursor:pointer;
+    transition:.2s;
+}
+
+.dot.active{ background:var(--ink); height:18px; width:6px; border-radius:3px; }
+
+.scroll-hint{
+    position:absolute;
+    bottom:20px;
+    left:18px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--faint);
+    pointer-events:none;
+}
+
+@media(max-width:720px){
+    .nav-arrow{ display:none; }
+}
+
+/* ============ slides (vertical story) ============ */
+
+.wrapped-scroll{
+    display:flex;
+    flex-direction:column;
+    width:100vw;
+    height:100vh;
+    height:100svh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scroll-snap-type:y mandatory;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+}
+
+.wrapped-scroll::-webkit-scrollbar{ display:none; }
+
+.slide{
+    width:100vw;
+    min-height:100vh;
+    min-height:100svh;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:110px 24px 90px;
+    overflow:hidden;
+}
+
+.slide::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    opacity:.55;
+}
+
+.slide-inner{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:640px;
+    text-align:center;
+}
+
+.eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:18px;
+}
+
+.headline{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:34px;
+    line-height:1.15;
+    margin-bottom:14px;
+}
+
+.sub{
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.5;
+    margin-bottom:8px;
+}
+
+/* theme glows */
+.theme-1::before{ background:radial-gradient(circle at 30% 25%, #3D5A4E 0%, transparent 60%); }
+.theme-2::before{ background:radial-gradient(circle at 70% 20%, #2E5B41 0%, transparent 60%); }
+.theme-3::before{ background:radial-gradient(circle at 25% 75%, #1F4E6B 0%, transparent 60%); }
+.theme-4::before{ background:radial-gradient(circle at 75% 30%, #5A3F1E 0%, transparent 55%); }
+.theme-5::before{ background:radial-gradient(circle at 30% 70%, #6B4A1E 0%, transparent 60%); }
+.theme-6::before{ background:radial-gradient(circle at 70% 70%, #6B2E24 0%, transparent 60%); }
+.theme-7::before{ background:radial-gradient(circle at 30% 30%, #23417A 0%, transparent 60%); }
+.theme-8::before{ background:radial-gradient(circle at 50% 20%, #6B551E 0%, transparent 65%); }
+
+/* ---------- slide 1 : intro ---------- */
+
+.hero-number{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:min(22vw,140px);
+    line-height:1;
+    letter-spacing:-.02em;
+    margin:18px 0 10px;
+    font-variant-numeric:tabular-nums;
+}
+
+.hero-hint{
+    margin-top:48px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--faint);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+
+.hero-hint .arrow{ animation:nudge 1.6s ease-in-out infinite; display:inline-block; }
+
+@keyframes nudge{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(6px); }
+}
+
+/* ---------- window chrome motif ---------- */
+
+.win{
+    text-align:left;
+    background:rgba(244,246,242,.04);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:0 0 22px;
+    overflow:hidden;
+}
+
+.win-bar{
+    display:flex;
+    gap:6px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:20px;
+}
+
+.win-bar span{
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(244,246,242,.18);
+}
+
+.win-body{ padding:0 22px; }
+
+/* ---------- heatmap ---------- */
+
+.heatmap-wrap{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    justify-content:center;
+}
+
+.heatmap-days{
+    display:grid;
+    grid-template-rows:repeat(7,1fr);
+    gap:3px;
+    font-family:var(--font-mono);
+    font-size:9px;
+    color:var(--faint);
+    padding-top:1px;
+}
+
+.heatmap-days span{ height:12px; line-height:12px; }
+
+.heatmap-grid{
+    display:grid;
+    grid-auto-flow:column;
+    grid-template-rows:repeat(7,1fr);
+    gap:3px;
+    overflow-x:auto;
+    padding-bottom:4px;
+}
+
+.hcell{
+    width:12px;
+    height:12px;
+    border-radius:3px;
+    background:rgba(244,246,242,.06);
+    cursor:pointer;
+    transition:transform .12s;
+}
+
+.hcell:hover{ transform:scale(1.35); }
+
+.hcell.h0{ background:rgba(244,246,242,.06); }
+.hcell.h1{ background:#1F4A2E; }
+.hcell.h2{ background:#2E7A47; }
+.hcell.h3{ background:#3FA560; }
+.hcell.h4{ background:#4CAF6E; }
+
+.heat-legend{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-top:14px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--faint);
+}
+
+.heat-legend .hcell{ cursor:default; }
+.heat-legend .hcell:hover{ transform:none; }
+
+.tooltip{
+    position:fixed;
+    z-index:50;
+    background:#161B18;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    pointer-events:none;
+    opacity:0;
+    transform:translate(-50%,-120%);
+    transition:opacity .12s;
+    white-space:nowrap;
+}
+
+.tooltip.show{ opacity:1; }
+.tooltip b{ color:var(--gold); }
+
+.stat-strip{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    margin-top:26px;
+}
+
+.stat-strip .num{
+    font-family:var(--font-mono);
+    font-size:22px;
+    font-weight:600;
+}
+
+.stat-strip .lbl{ font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* ---------- charts ---------- */
+
+.chart-box{ height:260px; position:relative; margin-top:8px; }
+.chart-box.tall{ height:300px; }
+.chart-note{ margin-top:12px; font-size:12px; color:var(--faint); font-family:var(--font-mono); }
+
+/* ---------- weekday insight ---------- */
+
+.insight-card{
+    text-align:left;
+    background:rgba(244,246,242,.04);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.insight-card .ic-num{
+    font-family:var(--font-mono);
+    font-size:26px;
+    font-weight:700;
+    min-width:64px;
+}
+
+.insight-card .ic-text{ font-size:13px; color:var(--muted); line-height:1.4; }
+.insight-card .ic-text b{ color:var(--ink); font-weight:600; }
+
+/* ---------- record day ---------- */
+
+.record-date{
+    font-family:var(--font-mono);
+    font-size:18px;
+    color:var(--muted);
+    margin-bottom:6px;
+}
+
+.record-number{
+    font-family:var(--font-mono);
+    font-size:min(26vw,150px);
+    font-weight:700;
+    line-height:1;
+    color:var(--hard);
+}
+
+/* ---------- metric grid (reused: difficulty / summary) ---------- */
+
+.metric-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px 24px;
+    margin-top:22px;
+    text-align:left;
+}
+
+.metric-grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+
+.metric{
+    border-left:1px solid var(--line);
+    padding-left:12px;
+}
+
+.metric .label{ font-size:11px; color:var(--muted); margin-bottom:6px; }
+.metric .value{ font-family:var(--font-mono); font-size:19px; font-weight:600; }
+
+/* ---------- summary grid ---------- */
+
+.summary-card{
+    text-align:left;
+    background:rgba(244,246,242,.04);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:26px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:8px;
+}
+
+.summary-grid .item .label{ font-size:11px; color:var(--muted); margin-bottom:6px; }
+.summary-grid .item .value{ font-family:var(--font-mono); font-size:18px; font-weight:600; }
+
+.btn{
+    margin-top:26px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--ink);
+    color:#0A0C0B;
+    border:none;
+    padding:12px 22px;
+    border-radius:30px;
+    font-family:var(--font-ui);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn:hover{ opacity:.85; }
+
+/* legend for donut */
+.legend-row{
+    display:flex;
+    justify-content:center;
+    gap:22px;
+    margin-top:16px;
+    font-family:var(--font-mono);
+    font-size:13px;
+}
+
+.legend-row .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+
+/* stat row pair (contest) */
+.pair-row{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    margin-top:24px;
+}
+
+.pair-row .p-num{ font-family:var(--font-mono); font-size:24px; font-weight:700; }
+.pair-row .p-lbl{ font-size:11px; color:var(--muted); margin-top:4px; }
+
+@media(max-width:600px){
+    .headline{ font-size:26px; }
+    .summary-grid{ grid-template-columns:1fr 1fr; gap:14px; }
+    .metric-grid{ grid-template-columns:1fr 1fr; }
+    .metric-grid.cols-3{ grid-template-columns:1fr 1fr; }
+    .stat-strip{ gap:18px; }
+    .pair-row{ gap:18px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .hero-hint .arrow{ animation:none; }
+    .wrapped-scroll{ scroll-behavior:auto; }
+}
+
+:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+</style>
 </head>
-
 <body>
 
-<h1>Профиль: {{ data.realname }}</h1>
-
-<p>Рейтинг: {{ data.ranking }}</p>
-<p>Репутация: {{ data.reputation }}</p>
-
-
-<h2>Решенные задачи</h2>
-
-<ul>
-    <li>Easy: {{ data.submission.easy }}</li>
-    <li>Medium: {{ data.submission.medium }}</li>
-    <li>Hard: {{ data.submission.hard }}</li>
-    <li>Total: {{ data.submission.total }}</li>
-</ul>
-
-
-<h2>Контесты</h2>
-
-<ul>
-    <li>Участий: {{ contest_data.attended_contests }}</li>
-    <li>Rating: {{ contest_data.contest_rating }}</li>
-    <li>Global Rank: {{ contest_data.global_ranking }}</li>
-    <li>Top: {{ contest_data.top_percentage }}%</li>
-</ul>
-
-
-
-<div class="charts">
-
-
-    <!-- Rating -->
-    <div class="chart-box full" id="rating-chart"></div>
-
-
-    <!-- Pie -->
-    <div class="chart-box" id="difficulty-chart"></div>
-
-
-    <!-- Stack -->
-    <div class="chart-box" id="solved-chart"></div>
-
-
-    <!-- Heatmap -->
-    <div class="chart-box full" id="heatmap-chart"></div>
-
-
+<div class="chrome">
+    <div class="story-bar" id="storyBar"></div>
+    <div class="brand">leetcode<b>/wrapped</b></div>
+    <div class="slide-count"><span id="slideNow">1</span> / <span id="slideTotal">8</span></div>
+    <button class="nav-arrow prev" id="prevBtn" aria-label="Назад">↑</button>
+    <button class="nav-arrow next" id="nextBtn" aria-label="Вперёд">↓</button>
+    <div class="dots" id="dots"></div>
+    <div class="scroll-hint">колёсико / свайп ↓</div>
 </div>
 
+<main class="wrapped-scroll" id="scroller">
 
+<!-- ===== 1. INTRO ===== -->
+<section class="slide theme-1">
+    <div class="slide-inner">
+        <div class="eyebrow">Привет, {{ data.realname }}</div>
+        <div class="headline">Вот что ты наковырял на LeetCode</div>
+        <div class="hero-number" id="countUp">0</div>
+        <div class="sub">задач решено всего</div>
+        <div class="hero-hint"><span>пролистай историю</span><span class="arrow">↓</span></div>
+    </div>
+</section>
 
+<!-- ===== 2. HEATMAP ===== -->
+<section class="slide theme-2">
+    <div class="slide-inner">
+        <div class="eyebrow">Карта активности</div>
+        <div class="headline">Каждый день — квадратик</div>
+        <div class="sub" id="heatmapPeriod">загрузка данных…</div>
+
+        <div class="win" style="margin-top:22px;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="heatmap-wrap">
+                    <div class="heatmap-days">
+                        <span>Пн</span><span></span><span>Ср</span><span></span><span>Пт</span><span></span><span>Вс</span>
+                    </div>
+                    <div class="heatmap-grid" id="heatmapGrid"></div>
+                </div>
+                <div class="heat-legend">
+                    <span>меньше</span>
+                    <span class="hcell h0"></span>
+                    <span class="hcell h1"></span>
+                    <span class="hcell h2"></span>
+                    <span class="hcell h3"></span>
+                    <span class="hcell h4"></span>
+                    <span>больше</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-strip">
+            <div><div class="num" id="activeDays">—</div><div class="lbl">активных дней</div></div>
+            <div><div class="num" id="idleDays">—</div><div class="lbl">дней без решений</div></div>
+            <div><div class="num" id="avgPerDay">—</div><div class="lbl">задач в среднем/день</div></div>
+            <div><div class="num" id="bestWeekNum">—</div><div class="lbl">лучшая неделя</div></div>
+            <div><div class="num" id="longestGap">—</div><div class="lbl">макс. пауза, дней</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 3. TREND ===== -->
+<section class="slide theme-3">
+    <div class="slide-inner" style="max-width:720px;">
+        <div class="eyebrow">Прогресс во времени</div>
+        <div class="headline">Наведи на линию — остальные погаснут</div>
+        <div class="win" style="text-align:left;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="chart-box tall"><canvas id="trendChart"></canvas></div>
+            </div>
+        </div>
+        <div class="chart-note">курсор на линию → выделяется она, остальные тускнеют · курсор на область графика → дата и разбивка за день</div>
+    </div>
+</section>
+
+<!-- ===== 4. DIFFICULTY ===== -->
+<section class="slide theme-4">
+    <div class="slide-inner">
+        <div class="eyebrow">Из чего это состоит</div>
+        <div class="headline">Баланс сложности</div>
+        <div class="chart-box" style="max-width:260px;margin:8px auto 0;"><canvas id="difficultyChart"></canvas></div>
+        <div class="legend-row">
+            <span><span class="dot" style="background:var(--easy)"></span>Easy {{ data.submission.easy }}</span>
+            <span><span class="dot" style="background:var(--medium)"></span>Medium {{ data.submission.medium }}</span>
+            <span><span class="dot" style="background:var(--hard)"></span>Hard {{ data.submission.hard }}</span>
+        </div>
+        <div class="metric-grid cols-3">
+            <div class="metric"><div class="label">Hard, % от всех</div><div class="value" id="hardPct">0%</div></div>
+            <div class="metric"><div class="label">Medium, % от всех</div><div class="value" id="mediumPct">0%</div></div>
+            <div class="metric"><div class="label">Easy, % от всех</div><div class="value" id="easyPct">0%</div></div>
+            <div class="metric"><div class="label">Индекс сложности</div><div class="value" id="difficultyScore">0</div></div>
+            <div class="metric"><div class="label">Комплексность</div><div class="value" id="complexityIndex">0</div></div>
+            <div class="metric"><div class="label">Easy на 1 Hard</div><div class="value" id="easyPerHard">0</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 5. WEEKDAY ===== -->
+<section class="slide theme-5">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Какой день твой?</div>
+        <div class="headline">Задачи по дням недели</div>
+        <div class="win" style="text-align:left;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="chart-box"><canvas id="weekdayChart"></canvas></div>
+            </div>
+        </div>
+        <div class="insight-card">
+            <div class="ic-num" id="bestDayShort">—</div>
+            <div class="ic-text">Чаще всего решаешь по <b id="bestDayFull">—</b>. Реже всего — по <b id="worstDayFull">—</b>.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 6. RECORD DAY ===== -->
+<section class="slide theme-6">
+    <div class="slide-inner">
+        <div class="eyebrow">Рекордный день</div>
+        <div class="record-date" id="recordDate">—</div>
+        <div class="record-number" id="recordNumber">0</div>
+        <div class="sub" id="recordLabel">задач за один день — твой личный максимум</div>
+
+        <div class="insight-card" style="margin-top:36px;">
+            <div class="ic-num" id="streakNum">0</div>
+            <div class="ic-text">самая длинная серия дней подряд с решёнными задачами — <b id="streakDates">—</b></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 7. CONTEST ===== -->
+<section class="slide theme-7">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Контесты</div>
+        <div class="headline">Рейтинг за 90 дней</div>
+        <div class="win" style="text-align:left;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="chart-box"><canvas id="contestChart"></canvas></div>
+            </div>
+        </div>
+        <div class="pair-row">
+            <div><div class="p-num">{{ contest_data.attended_contests }}</div><div class="p-lbl">контестов</div></div>
+            <div><div class="p-num" id="currentRatingNum">{{ contest_data.contest_rating }}</div><div class="p-lbl">текущий рейтинг</div></div>
+            <div><div class="p-num" id="ratingChangeNum">—</div><div class="p-lbl">изменение за период</div></div>
+            <div><div class="p-num">{{ contest_data.top_percentage }}%</div><div class="p-lbl">топ percentile</div></div>
+            <div><div class="p-num" id="problemsPerContest">—</div><div class="p-lbl">задач/контест</div></div>
+            <div><div class="p-num" id="ratingPerContest">—</div><div class="p-lbl">рейтинг/контест</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== 8. SUMMARY ===== -->
+<section class="slide theme-8">
+    <div class="slide-inner">
+        <div class="eyebrow">Итоги</div>
+        <div class="headline">{{ data.realname }} — карточка сезона</div>
+
+        <div class="summary-card" id="summaryCard">
+            <div class="eyebrow" style="margin-bottom:0;">leetcode / {{ username }}</div>
+            <div class="summary-grid">
+                <div class="item"><div class="label">Всего решено</div><div class="value">{{ data.submission.total }}</div></div>
+                <div class="item"><div class="label">Рейтинг контестов</div><div class="value" id="sumContestRating">{{ contest_data.contest_rating }}</div></div>
+                <div class="item"><div class="label">Любимый день</div><div class="value" id="sumBestDay">—</div></div>
+                <div class="item"><div class="label">Рекордный день</div><div class="value" id="sumRecordDay">—</div></div>
+                <div class="item"><div class="label">Лучшая серия</div><div class="value" id="sumStreak">—</div></div>
+                <div class="item"><div class="label">Активных дней</div><div class="value" id="sumActiveDays">—</div></div>
+                <div class="item"><div class="label">Среднее/день</div><div class="value" id="sumAvgDay">—</div></div>
+                <div class="item"><div class="label">Индекс сложности</div><div class="value" id="sumDifficultyScore">—</div></div>
+                <div class="item"><div class="label">Достижения</div><div class="value" id="sumAchievement">—</div></div>
+            </div>
+        </div>
+
+        <button class="btn" id="downloadBtn">Скачать карточку</button>
+    </div>
+</section>
+
+</main>
+
+<div class="tooltip" id="heatTooltip"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-    const username = "{{ username }}";
+const total   = Number("{{ data.submission.total }}")  || 0;
+const easy    = Number("{{ data.submission.easy }}")   || 0;
+const medium  = Number("{{ data.submission.medium }}") || 0;
+const hard    = Number("{{ data.submission.hard }}")   || 0;
+const contests = Number("{{ contest_data.attended_contests }}") || 0;
+const rating   = round2(Number("{{ contest_data.contest_rating }}") || 0);
+
+function round2(n){
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function fmtNum2(n){
+    const r = round2(n);
+    return Number.isInteger(r) ? String(r) : String(r);
+}
+
+document.getElementById("currentRatingNum").textContent = fmtNum2(rating);
+document.getElementById("sumContestRating").textContent = fmtNum2(rating);
+
+const difficultyScore = easy + medium*2 + hard*3;
+
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = "#93A79B";
+
+const RU_MONTHS = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const RU_WEEKDAYS_SHORT = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const RU_WEEKDAYS_FULL  = ["понедельникам","вторникам","средам","четвергам","пятницам","субботам","воскресеньям"];
+
+function ruPlural(n, forms){
+    n = Math.abs(n) % 100;
+    const n1 = n % 10;
+    if (n > 10 && n < 20) return forms[2];
+    if (n1 > 1 && n1 < 5) return forms[1];
+    if (n1 === 1) return forms[0];
+    return forms[2];
+}
+
+function fmtDate(iso){
+    const d = new Date(iso + "T00:00:00");
+    return d.getDate() + " " + RU_MONTHS[d.getMonth()];
+}
+
+function mondayIndex(iso){
+    const d = new Date(iso + "T00:00:00");
+    return (d.getDay() + 6) % 7;
+}
+
+function withAlpha(hex, alphaHex){
+    return hex + alphaHex;
+}
+
+
+document.getElementById("hardPct").textContent = total ? Math.round((hard/total)*100) + "%" : "0%";
+document.getElementById("mediumPct").textContent = total ? Math.round((medium/total)*100) + "%" : "0%";
+document.getElementById("easyPct").textContent = total ? Math.round((easy/total)*100) + "%" : "0%";
+document.getElementById("difficultyScore").textContent = difficultyScore;
+document.getElementById("complexityIndex").textContent = total ? Math.round(difficultyScore/total) : "0";
+document.getElementById("easyPerHard").textContent = hard ? Math.round(easy/hard) : "0";
+
+document.getElementById("problemsPerContest").textContent = contests ? Math.round(total/contests) : "0";
+document.getElementById("ratingPerContest").textContent = contests ? fmtNum2(rating/contests) : "0";
+
+document.getElementById("sumDifficultyScore").textContent = difficultyScore;
+document.getElementById("sumAchievement").textContent = Math.round(difficultyScore + rating + contests*10);
+
+const scroller = document.getElementById("scroller");
+const slides = Array.from(document.querySelectorAll(".slide"));
+const storyBar = document.getElementById("storyBar");
+const dotsWrap = document.getElementById("dots");
+const slideNowEl = document.getElementById("slideNow");
+document.getElementById("slideTotal").textContent = slides.length;
+
+slides.forEach((_, i)=>{
+    const seg = document.createElement("div");
+    seg.className = "story-seg";
+    seg.innerHTML = "<i></i>";
+    storyBar.appendChild(seg);
+
+    const dot = document.createElement("div");
+    dot.className = "dot";
+    dot.addEventListener("click", ()=> goTo(i));
+    dotsWrap.appendChild(dot);
+});
+
+const segs = Array.from(storyBar.children);
+const dots = Array.from(dotsWrap.children);
+let current = 0;
+
+function setActive(i){
+    current = i;
+    slideNowEl.textContent = i + 1;
+    segs.forEach((s, idx)=>{
+        s.classList.toggle("done", idx < i);
+        s.classList.toggle("active", idx === i);
+    });
+    dots.forEach((d, idx)=> d.classList.toggle("active", idx === i));
+}
+
+function goTo(i){
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    scroller.scrollTo({ top: slides[i].offsetTop, behavior:"smooth" });
+}
+
+document.getElementById("prevBtn").addEventListener("click", ()=> goTo(current - 1));
+document.getElementById("nextBtn").addEventListener("click", ()=> goTo(current + 1));
+
+document.addEventListener("keydown", (e)=>{
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") goTo(current + 1);
+    if (e.key === "ArrowUp" || e.key === "ArrowLeft") goTo(current - 1);
+});
+
+const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6){
+            setActive(slides.indexOf(entry.target));
+        }
+    });
+}, { root: scroller, threshold: [0.6] });
+
+slides.forEach(s => io.observe(s));
+setActive(0);
+
+const countEl = document.getElementById("countUp");
+let counted = false;
+
+const introObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+        if (entry.isIntersecting && !counted){
+            counted = true;
+            const dur = 1200;
+            const start = performance.now();
+            function step(t){
+                const p = Math.min(1, (t - start) / dur);
+                const eased = 1 - Math.pow(1 - p, 3);
+                countEl.textContent = Math.round(eased * total);
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+    });
+}, { root: scroller, threshold: 0.6 });
+
+introObserver.observe(slides[0]);
+
+new Chart(document.getElementById("difficultyChart"), {
+    type:"doughnut",
+    data:{
+        labels:["Easy","Medium","Hard"],
+        datasets:[{
+            data:[easy, medium, hard],
+            backgroundColor:["#4CAF6E","#D9A441","#E1584A"],
+            borderColor:"#0A0C0B",
+            borderWidth:3
+        }]
+    },
+    options:{
+        responsive:true,
+        cutout:"68%",
+        plugins:{ legend:{ display:false } }
+    }
+});
+
+fetch("/api/dashboard-data/{{ username }}/")
+.then(r => r.json())
+.then(data => {
+
+    const dates   = data.dates  || [];
+    const totals  = data.total  || [];
+    const easyD   = data.easy   || [];
+    const mediumD = data.medium || [];
+    const hardD   = data.hard   || [];
+    const ratings = (data.rating || []).map(v => round2(v));
+
+    if (!dates.length) return;
+
+    const deltaTotal  = totals.map((v,i)=> i === 0 ? 0 : Math.max(0, v - totals[i-1]));
+    const deltaEasy   = easyD.map((v,i)=> i === 0 ? 0 : Math.max(0, v - easyD[i-1]));
+    const deltaMedium = mediumD.map((v,i)=> i === 0 ? 0 : Math.max(0, v - mediumD[i-1]));
+    const deltaHard   = hardD.map((v,i)=> i === 0 ? 0 : Math.max(0, v - hardD[i-1]));
+
+
+    document.getElementById("heatmapPeriod").textContent =
+        fmtDate(dates[0]) + " — " + fmtDate(dates[dates.length - 1]);
+
+    const maxDelta = Math.max(1, ...deltaTotal);
+    const grid = document.getElementById("heatmapGrid");
+    const tooltip = document.getElementById("heatTooltip");
+
+    const firstOffset = mondayIndex(dates[0]);
+    for (let i = 0; i < firstOffset; i++){
+        const pad = document.createElement("div");
+        pad.className = "hcell h0";
+        pad.style.visibility = "hidden";
+        grid.appendChild(pad);
+    }
+
+    let activeDays = 0;
+    let longestGap = 0, gapRun = 0;
+    dates.forEach((d, i)=>{
+        const count = deltaTotal[i];
+        if (count > 0){ activeDays++; gapRun = 0; } else { gapRun++; longestGap = Math.max(longestGap, gapRun); }
+        const ratio = count / maxDelta;
+        let level = 0;
+        if (count > 0) level = ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+
+        const cell = document.createElement("div");
+        cell.className = "hcell h" + level;
+        cell.dataset.date = d;
+        cell.dataset.count = count;
+
+        cell.addEventListener("mousemove", (e)=>{
+            tooltip.innerHTML = fmtDate(d) + ": <b>+" + count + "</b> " +
+                ruPlural(count, ["задача","задачи","задач"]);
+            tooltip.style.left = e.clientX + "px";
+            tooltip.style.top = e.clientY + "px";
+            tooltip.classList.add("show");
+        });
+        cell.addEventListener("mouseleave", ()=> tooltip.classList.remove("show"));
+
+        grid.appendChild(cell);
+    });
+
+    document.getElementById("activeDays").textContent = activeDays;
+    document.getElementById("idleDays").textContent = dates.length - activeDays;
+    document.getElementById("avgPerDay").textContent = Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length);
+    document.getElementById("longestGap").textContent = longestGap;
+    document.getElementById("sumActiveDays").textContent = activeDays;
+    document.getElementById("sumAvgDay").textContent = Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length);
+
+    let bestWeekSum = 0;
+    for (let i = 0; i + 7 <= deltaTotal.length; i++){
+        const sum = deltaTotal.slice(i, i+7).reduce((a,b)=>a+b,0);
+        if (sum > bestWeekSum) bestWeekSum = sum;
+    }
+    document.getElementById("bestWeekNum").textContent = "+" + bestWeekSum;
+
+
+    const trendDatasets = [
+        { key:"easy",   label:"Easy",   data: easyD,   base:"#4CAF6E" },
+        { key:"medium", label:"Medium", data: mediumD, base:"#D9A441" },
+        { key:"hard",   label:"Hard",   data: hardD,   base:"#E1584A" }
+    ].map(d => ({
+        label: d.label,
+        data: d.data,
+        borderColor: d.base,
+        backgroundColor: "transparent",
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        tension: .35,
+        _base: d.base
+    }));
+
+    const trendChart = new Chart(document.getElementById("trendChart"), {
+        type:"line",
+        data:{ labels: dates.map(fmtDate), datasets: trendDatasets },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            interaction:{ mode:"index", intersect:false },
+            plugins:{
+                legend:{
+                    position:"bottom",
+                    labels:{ boxWidth:8, boxHeight:8, usePointStyle:true },
+                    onHover:(evt, item)=> highlightDataset(item.datasetIndex),
+                    onLeave:()=> clearHighlight()
+                },
+                tooltip:{
+                    callbacks:{
+                        footer:(items)=>{
+                            const idx = items[0].dataIndex;
+                            return "+" + deltaTotal[idx] + "";
+                        }
+                    }
+                }
+            },
+            scales:{
+                x:{ grid:{ display:false }, ticks:{ maxTicksLimit:8 } },
+                y:{ grid:{ color:"rgba(244,246,242,.08)" } }
+            }
+        }
+    });
+
+    function highlightDataset(idx){
+        trendChart.data.datasets.forEach((ds,i)=>{
+            ds.borderColor = i === idx ? ds._base : withAlpha(ds._base, "33");
+            ds.borderWidth = i === idx ? 3 : 2;
+        });
+        trendChart.update("none");
+    }
+
+    function clearHighlight(){
+        trendChart.data.datasets.forEach(ds=>{ ds.borderColor = ds._base; ds.borderWidth = 2.5; });
+        trendChart.update("none");
+    }
+
+    trendChart.canvas.addEventListener("mousemove", (evt)=>{
+        const els = trendChart.getElementsAtEventForMode(evt, "dataset", { intersect:false }, false);
+        if (els.length) highlightDataset(els[0].datasetIndex); else clearHighlight();
+    });
+    trendChart.canvas.addEventListener("mouseleave", clearHighlight);
+
+
+    const weekdaySums = [0,0,0,0,0,0,0];
+    dates.forEach((d,i)=>{ weekdaySums[mondayIndex(d)] += deltaTotal[i]; });
+
+    const maxIdx = weekdaySums.indexOf(Math.max(...weekdaySums));
+    const minIdx = weekdaySums.indexOf(Math.min(...weekdaySums));
+
+    const wdColors = RU_WEEKDAYS_SHORT.map((_,i)=> i === maxIdx ? "#E8C468" : "rgba(244,246,242,.18)");
+
+    new Chart(document.getElementById("weekdayChart"), {
+        type:"bar",
+        data:{
+            labels: RU_WEEKDAYS_SHORT,
+            datasets:[{ data: weekdaySums, backgroundColor: wdColors, borderRadius:6, maxBarThickness:40 }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{ legend:{ display:false } },
+            scales:{
+                x:{ grid:{ display:false } },
+                y:{ grid:{ color:"rgba(244,246,242,.08)" }, beginAtZero:true }
+            }
+        }
+    });
+
+    document.getElementById("bestDayShort").textContent = RU_WEEKDAYS_SHORT[maxIdx];
+    document.getElementById("bestDayFull").textContent = RU_WEEKDAYS_FULL[maxIdx];
+    document.getElementById("worstDayFull").textContent = RU_WEEKDAYS_FULL[minIdx];
+    document.getElementById("sumBestDay").textContent = RU_WEEKDAYS_FULL[maxIdx];
+
+    let maxD = -1, maxDate = dates[0];
+    deltaTotal.forEach((v,i)=>{ if (v > maxD){ maxD = v; maxDate = dates[i]; } });
+
+    document.getElementById("recordDate").textContent = fmtDate(maxDate);
+    document.getElementById("recordNumber").textContent = maxD;
+    document.getElementById("recordLabel").textContent =
+        ruPlural(maxD, ["задача решена","задачи решено","задач решено"]) + " за один день — твой личный максимум";
+    document.getElementById("sumRecordDay").textContent = fmtDate(maxDate) + " (+" + maxD + ")";
+
+    let streak = 0, bestStreak = 0, streakEnd = dates[0], bestEnd = dates[0];
+    for (let i = 0; i < dates.length; i++){
+        if (deltaTotal[i] > 0){
+            streak++;
+            streakEnd = dates[i];
+            if (streak > bestStreak){ bestStreak = streak; bestEnd = streakEnd; }
+        } else {
+            streak = 0;
+        }
+    }
+    const bestStart = dates[Math.max(0, dates.indexOf(bestEnd) - bestStreak + 1)];
+
+    document.getElementById("streakNum").textContent = bestStreak;
+    document.getElementById("streakDates").textContent =
+        bestStreak > 0 ? (fmtDate(bestStart) + " — " + fmtDate(bestEnd)) : "пока нет серии";
+    document.getElementById("sumStreak").textContent = bestStreak + " " + ruPlural(bestStreak, ["день","дня","дней"]);
+
+    const ratingMin = Math.min(...ratings);
+    const ratingMax = Math.max(...ratings);
+    const ratingPad = Math.max(10, Math.round((ratingMax - ratingMin) * 0.1));
+
+    new Chart(document.getElementById("contestChart"), {
+        type:"line",
+        data:{
+            labels: dates.map(fmtDate),
+            datasets:[{
+                label:"Рейтинг",
+                data: ratings,
+                borderColor:"#4A8FD1",
+                backgroundColor:"rgba(74,143,209,.12)",
+                fill:true,
+                borderWidth:2,
+                pointRadius:0,
+                pointHoverRadius:4,
+                tension:.35
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            interaction:{ mode:"index", intersect:false },
+            plugins:{
+                legend:{ display:false },
+                tooltip:{
+                    callbacks:{
+                        label:(item)=> "Рейтинг: " + fmtNum2(item.parsed.y)
+                    }
+                }
+            },
+            scales:{
+                x:{ grid:{ display:false }, ticks:{ maxTicksLimit:8 } },
+                y:{
+                    grid:{ color:"rgba(244,246,242,.08)" },
+                    min: Math.floor(ratingMin - ratingPad),
+                    max: Math.ceil(ratingMax + ratingPad),
+                    ticks:{
+                        stepSize: 25,
+                        callback:(value)=> fmtNum2(value)
+                    }
+                }
+            }
+        }
+    });
+
+    if (ratings.length > 1){
+        const change = round2(ratings[ratings.length - 1] - ratings[0]);
+        document.getElementById("ratingChangeNum").textContent = (change >= 0 ? "+" : "") + fmtNum2(change);
+    }
+
+});
+
+document.getElementById("downloadBtn").addEventListener("click", ()=>{
+    const card = document.getElementById("summaryCard");
+    html2canvas(card, { backgroundColor:"#0A0C0B", scale:2 }).then(canvas=>{
+        const link = document.createElement("a");
+        link.download = "leetcode-wrapped-{{ username }}.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    });
+});
+
 </script>
-
-
-<script src="{% static 'js/dashboard.js' %}"></script>
-
 
 </body>
 </html>
