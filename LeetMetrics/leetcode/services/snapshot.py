@@ -35,35 +35,28 @@ def create_daily_snapshot(username):
     )
     
 def generate_fake_snapshots(username, days=90):
-    account = LeetCodeUserAccount.objects.select_related(
-        "contest_stats"
-    ).get(username=username)
+    account = LeetCodeUserAccount.objects.select_related("contest_stats").get(username=username)
 
     existing_count = DailyStatsSnapshot.objects.filter(account=account).count()
     if existing_count >= 90:
         return None
-    contest = account.contest_stats
 
     last_snapshot = (
         DailyStatsSnapshot.objects.filter(account=account)
         .order_by("-date")
         .first()
     )
-
     if not last_snapshot:
-        raise ValueError(
-            "Сначала создайте хотя бы один настоящий DailyStatsSnapshot."
-        )
+        raise ValueError("Сначала создайте хотя бы один настоящий DailyStatsSnapshot.")
 
     current_date = last_snapshot.date
-
     ranking = last_snapshot.ranking
     reputation = last_snapshot.reputation
-
     easy = last_snapshot.easy
     medium = last_snapshot.medium
     hard = last_snapshot.hard
 
+    has_contest = last_snapshot.contest_rating is not None
     contest_rating = last_snapshot.contest_rating
     global_ranking = last_snapshot.global_ranking
     attended_contests = last_snapshot.attended_contests
@@ -74,28 +67,26 @@ def generate_fake_snapshots(username, days=90):
         current_date += timedelta(days=1)
 
         easy += random.randint(0, 2)
-        if random.randint(0,1) == 1:
+        if random.randint(0, 1) == 1:
             medium += random.randint(0, 1)
         else:
             hard += random.randint(0, 1)
 
         total = easy + medium + hard
-
         ranking -= random.randint(-3, 5)
-        contest_rating += random.randint(-10, 15)
+
+        if has_contest:
+            contest_rating += random.randint(-10, 15)
 
         DailyStatsSnapshot.objects.create(
             account=account,
             date=current_date,
-
             ranking=ranking,
             reputation=reputation,
-
             total=total,
             easy=easy,
             medium=medium,
             hard=hard,
-
             contest_rating=contest_rating,
             global_ranking=global_ranking,
             attended_contests=attended_contests,

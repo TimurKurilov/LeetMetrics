@@ -40,8 +40,6 @@ body{
 
 ::selection{ background:var(--gold); color:#0A0C0B; }
 
-/* ============ chrome ============ */
-
 .chrome{
     position:fixed;
     inset:0;
@@ -160,8 +158,6 @@ body{
     .nav-arrow{ display:none; }
 }
 
-/* ============ slides (vertical story) ============ */
-
 .wrapped-scroll{
     display:flex;
     flex-direction:column;
@@ -241,8 +237,6 @@ body{
 .theme-7::before{ background:radial-gradient(circle at 30% 30%, #23417A 0%, transparent 60%); }
 .theme-8::before{ background:radial-gradient(circle at 50% 20%, #6B551E 0%, transparent 65%); }
 
-/* ---------- slide 1 : intro ---------- */
-
 .hero-number{
     font-family:var(--font-mono);
     font-weight:700;
@@ -271,7 +265,6 @@ body{
     50%{ transform:translateY(6px); }
 }
 
-/* ---------- window chrome motif ---------- */
 
 .win{
     text-align:left;
@@ -393,13 +386,11 @@ body{
 
 .stat-strip .lbl{ font-size:11px; color:var(--muted); margin-top:2px; }
 
-/* ---------- charts ---------- */
 
 .chart-box{ height:260px; position:relative; margin-top:8px; }
 .chart-box.tall{ height:300px; }
 .chart-note{ margin-top:12px; font-size:12px; color:var(--faint); font-family:var(--font-mono); }
 
-/* ---------- weekday insight ---------- */
 
 .insight-card{
     text-align:left;
@@ -423,7 +414,6 @@ body{
 .insight-card .ic-text{ font-size:13px; color:var(--muted); line-height:1.4; }
 .insight-card .ic-text b{ color:var(--ink); font-weight:600; }
 
-/* ---------- record day ---------- */
 
 .record-date{
     font-family:var(--font-mono);
@@ -440,7 +430,6 @@ body{
     color:var(--hard);
 }
 
-/* ---------- metric grid (reused: difficulty / summary) ---------- */
 
 .metric-grid{
     display:grid;
@@ -460,7 +449,6 @@ body{
 .metric .label{ font-size:11px; color:var(--muted); margin-bottom:6px; }
 .metric .value{ font-family:var(--font-mono); font-size:19px; font-weight:600; }
 
-/* ---------- summary grid ---------- */
 
 .summary-card{
     text-align:left;
@@ -555,7 +543,6 @@ body{
 
 <main class="wrapped-scroll" id="scroller">
 
-<!-- ===== 1. INTRO ===== -->
 <section class="slide theme-1">
     <div class="slide-inner">
         <div class="eyebrow">Привет, {{ data.realname }}</div>
@@ -566,7 +553,6 @@ body{
     </div>
 </section>
 
-<!-- ===== 2. HEATMAP ===== -->
 <section class="slide theme-2">
     <div class="slide-inner">
         <div class="eyebrow">Карта активности</div>
@@ -604,7 +590,6 @@ body{
     </div>
 </section>
 
-<!-- ===== 3. TREND ===== -->
 <section class="slide theme-3">
     <div class="slide-inner" style="max-width:720px;">
         <div class="eyebrow">Прогресс во времени</div>
@@ -619,7 +604,6 @@ body{
     </div>
 </section>
 
-<!-- ===== 4. DIFFICULTY ===== -->
 <section class="slide theme-4">
     <div class="slide-inner">
         <div class="eyebrow">Из чего это состоит</div>
@@ -641,7 +625,6 @@ body{
     </div>
 </section>
 
-<!-- ===== 5. WEEKDAY ===== -->
 <section class="slide theme-5">
     <div class="slide-inner" style="max-width:680px;">
         <div class="eyebrow">Какой день твой?</div>
@@ -659,7 +642,6 @@ body{
     </div>
 </section>
 
-<!-- ===== 6. RECORD DAY ===== -->
 <section class="slide theme-6">
     <div class="slide-inner">
         <div class="eyebrow">Рекордный день</div>
@@ -674,29 +656,43 @@ body{
     </div>
 </section>
 
-<!-- ===== 7. CONTEST ===== -->
 <section class="slide theme-7">
     <div class="slide-inner" style="max-width:680px;">
         <div class="eyebrow">Контесты</div>
-        <div class="headline">Рейтинг за 90 дней</div>
-        <div class="win" style="text-align:left;">
-            <div class="win-bar"><span></span><span></span><span></span></div>
-            <div class="win-body">
-                <div class="chart-box"><canvas id="contestChart"></canvas></div>
+
+        {% if has_contest %}
+            <div class="headline">Рейтинг за 90 дней</div>
+            <div class="win" style="text-align:left;">
+                <div class="win-bar"><span></span><span></span><span></span></div>
+                <div class="win-body">
+                    <div class="chart-box"><canvas id="contestChart"></canvas></div>
+                </div>
             </div>
-        </div>
-        <div class="pair-row">
-            <div><div class="p-num">{{ contest_data.attended_contests }}</div><div class="p-lbl">контестов</div></div>
-            <div><div class="p-num" id="currentRatingNum">{{ contest_data.contest_rating }}</div><div class="p-lbl">текущий рейтинг</div></div>
-            <div><div class="p-num" id="ratingChangeNum">—</div><div class="p-lbl">изменение за период</div></div>
-            <div><div class="p-num">{{ contest_data.top_percentage }}%</div><div class="p-lbl">топ percentile</div></div>
-            <div><div class="p-num" id="problemsPerContest">—</div><div class="p-lbl">задач/контест</div></div>
-            <div><div class="p-num" id="ratingPerContest">—</div><div class="p-lbl">рейтинг/контест</div></div>
-        </div>
+            <div class="pair-row">
+                <div><div class="p-num">{{ contest_data.attended_contests }}</div><div class="p-lbl">контестов</div></div>
+                <div><div class="p-num" id="currentRatingNum">{{ contest_data.contest_rating }}</div><div class="p-lbl">текущий рейтинг</div></div>
+                <div><div class="p-num" id="ratingChangeNum">—</div><div class="p-lbl">изменение за период</div></div>
+                <div><div class="p-num">{{ contest_data.top_percentage }}%</div><div class="p-lbl">топ percentile</div></div>
+                <div><div class="p-num" id="problemsPerContest">—</div><div class="p-lbl">задач/контест</div></div>
+                <div><div class="p-num" id="ratingPerContest">—</div><div class="p-lbl">рейтинг/контест</div></div>
+            </div>
+        {% else %}
+            <div class="headline">Контестов пока нет</div>
+            <div class="win" style="text-align:left;">
+                <div class="win-bar"><span></span><span></span><span></span></div>
+                <div class="win-body" style="padding: 32px 24px;">
+                    <p style="opacity:0.7; line-height:1.6; margin:0;">
+                        Контесты — еженедельные соревнования на LeetCode, где ты решаешь задачи на время
+                        и получаешь рейтинг, который отражает твой уровень среди других участников.
+                        Поучаствуй хотя бы в одном контесте — и здесь появится твоя статистика:
+                        рейтинг, глобальный ранкинг и график прогресса за 90 дней.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </section>
 
-<!-- ===== 8. SUMMARY ===== -->
 <section class="slide theme-8">
     <div class="slide-inner">
         <div class="eyebrow">Итоги</div>
@@ -706,7 +702,7 @@ body{
             <div class="eyebrow" style="margin-bottom:0;">leetcode / {{ username }}</div>
             <div class="summary-grid">
                 <div class="item"><div class="label">Всего решено</div><div class="value">{{ data.submission.total }}</div></div>
-                <div class="item"><div class="label">Рейтинг контестов</div><div class="value" id="sumContestRating">{{ contest_data.contest_rating }}</div></div>
+                <div class="item"><div class="label">Рейтинг контестов</div><div class="value" id="sumContestRating">—</div></div>
                 <div class="item"><div class="label">Любимый день</div><div class="value" id="sumBestDay">—</div></div>
                 <div class="item"><div class="label">Рекордный день</div><div class="value" id="sumRecordDay">—</div></div>
                 <div class="item"><div class="label">Лучшая серия</div><div class="value" id="sumStreak">—</div></div>
@@ -728,12 +724,14 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
+const hasContest = {{ has_contest|yesno:"true,false" }};
+
 const total   = Number("{{ data.submission.total }}")  || 0;
 const easy    = Number("{{ data.submission.easy }}")   || 0;
 const medium  = Number("{{ data.submission.medium }}") || 0;
 const hard    = Number("{{ data.submission.hard }}")   || 0;
-const contests = Number("{{ contest_data.attended_contests }}") || 0;
-const rating   = round2(Number("{{ contest_data.contest_rating }}") || 0);
+const contests = hasContest ? (Number("{{ contest_data.attended_contests }}") || 0) : 0;
+const rating   = hasContest ? round2(Number("{{ contest_data.contest_rating }}") || 0) : 0;
 
 function round2(n){
     return Math.round((n + Number.EPSILON) * 100) / 100;
@@ -744,8 +742,19 @@ function fmtNum2(n){
     return Number.isInteger(r) ? String(r) : String(r);
 }
 
-document.getElementById("currentRatingNum").textContent = fmtNum2(rating);
-document.getElementById("sumContestRating").textContent = fmtNum2(rating);
+function setText(id, value){
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+if (hasContest){
+    setText("currentRatingNum", fmtNum2(rating));
+    setText("sumContestRating", fmtNum2(rating));
+    setText("problemsPerContest", contests ? Math.round(total/contests) : "0");
+    setText("ratingPerContest", contests ? fmtNum2(rating/contests) : "0");
+} else {
+    setText("sumContestRating", "—");
+}
 
 const difficultyScore = easy + medium*2 + hard*3;
 
@@ -781,18 +790,15 @@ function withAlpha(hex, alphaHex){
 }
 
 
-document.getElementById("hardPct").textContent = total ? Math.round((hard/total)*100) + "%" : "0%";
-document.getElementById("mediumPct").textContent = total ? Math.round((medium/total)*100) + "%" : "0%";
-document.getElementById("easyPct").textContent = total ? Math.round((easy/total)*100) + "%" : "0%";
-document.getElementById("difficultyScore").textContent = difficultyScore;
-document.getElementById("complexityIndex").textContent = total ? Math.round(difficultyScore/total) : "0";
-document.getElementById("easyPerHard").textContent = hard ? Math.round(easy/hard) : "0";
+setText("hardPct", total ? Math.round((hard/total)*100) + "%" : "0%");
+setText("mediumPct", total ? Math.round((medium/total)*100) + "%" : "0%");
+setText("easyPct", total ? Math.round((easy/total)*100) + "%" : "0%");
+setText("difficultyScore", difficultyScore);
+setText("complexityIndex", total ? Math.round(difficultyScore/total) : "0");
+setText("easyPerHard", hard ? Math.round(easy/hard) : "0");
 
-document.getElementById("problemsPerContest").textContent = contests ? Math.round(total/contests) : "0";
-document.getElementById("ratingPerContest").textContent = contests ? fmtNum2(rating/contests) : "0";
-
-document.getElementById("sumDifficultyScore").textContent = difficultyScore;
-document.getElementById("sumAchievement").textContent = Math.round(difficultyScore + rating + contests*10);
+setText("sumDifficultyScore", difficultyScore);
+setText("sumAchievement", Math.round(difficultyScore + rating + contests*10));
 
 const scroller = document.getElementById("scroller");
 const slides = Array.from(document.querySelectorAll(".slide"));
@@ -900,7 +906,7 @@ fetch("/api/dashboard-data/{{ username }}/")
     const easyD   = data.easy   || [];
     const mediumD = data.medium || [];
     const hardD   = data.hard   || [];
-    const ratings = (data.rating || []).map(v => round2(v));
+    const ratings = (data.rating || []).map(v => v === null || v === undefined ? null : round2(v));
 
     if (!dates.length) return;
 
@@ -910,8 +916,7 @@ fetch("/api/dashboard-data/{{ username }}/")
     const deltaHard   = hardD.map((v,i)=> i === 0 ? 0 : Math.max(0, v - hardD[i-1]));
 
 
-    document.getElementById("heatmapPeriod").textContent =
-        fmtDate(dates[0]) + " — " + fmtDate(dates[dates.length - 1]);
+    setText("heatmapPeriod", fmtDate(dates[0]) + " — " + fmtDate(dates[dates.length - 1]));
 
     const maxDelta = Math.max(1, ...deltaTotal);
     const grid = document.getElementById("heatmapGrid");
@@ -951,19 +956,19 @@ fetch("/api/dashboard-data/{{ username }}/")
         grid.appendChild(cell);
     });
 
-    document.getElementById("activeDays").textContent = activeDays;
-    document.getElementById("idleDays").textContent = dates.length - activeDays;
-    document.getElementById("avgPerDay").textContent = Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length);
-    document.getElementById("longestGap").textContent = longestGap;
-    document.getElementById("sumActiveDays").textContent = activeDays;
-    document.getElementById("sumAvgDay").textContent = Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length);
+    setText("activeDays", activeDays);
+    setText("idleDays", dates.length - activeDays);
+    setText("avgPerDay", Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length));
+    setText("longestGap", longestGap);
+    setText("sumActiveDays", activeDays);
+    setText("sumAvgDay", Math.round(deltaTotal.reduce((a,b)=>a+b,0) / dates.length));
 
     let bestWeekSum = 0;
     for (let i = 0; i + 7 <= deltaTotal.length; i++){
         const sum = deltaTotal.slice(i, i+7).reduce((a,b)=>a+b,0);
         if (sum > bestWeekSum) bestWeekSum = sum;
     }
-    document.getElementById("bestWeekNum").textContent = "+" + bestWeekSum;
+    setText("bestWeekNum", "+" + bestWeekSum);
 
 
     const trendDatasets = [
@@ -1057,19 +1062,18 @@ fetch("/api/dashboard-data/{{ username }}/")
         }
     });
 
-    document.getElementById("bestDayShort").textContent = RU_WEEKDAYS_SHORT[maxIdx];
-    document.getElementById("bestDayFull").textContent = RU_WEEKDAYS_FULL[maxIdx];
-    document.getElementById("worstDayFull").textContent = RU_WEEKDAYS_FULL[minIdx];
-    document.getElementById("sumBestDay").textContent = RU_WEEKDAYS_FULL[maxIdx];
+    setText("bestDayShort", RU_WEEKDAYS_SHORT[maxIdx]);
+    setText("bestDayFull", RU_WEEKDAYS_FULL[maxIdx]);
+    setText("worstDayFull", RU_WEEKDAYS_FULL[minIdx]);
+    setText("sumBestDay", RU_WEEKDAYS_FULL[maxIdx]);
 
     let maxD = -1, maxDate = dates[0];
     deltaTotal.forEach((v,i)=>{ if (v > maxD){ maxD = v; maxDate = dates[i]; } });
 
-    document.getElementById("recordDate").textContent = fmtDate(maxDate);
-    document.getElementById("recordNumber").textContent = maxD;
-    document.getElementById("recordLabel").textContent =
-        ruPlural(maxD, ["задача решена","задачи решено","задач решено"]) + " за один день — твой личный максимум";
-    document.getElementById("sumRecordDay").textContent = fmtDate(maxDate) + " (+" + maxD + ")";
+    setText("recordDate", fmtDate(maxDate));
+    setText("recordNumber", maxD);
+    setText("recordLabel", ruPlural(maxD, ["задача решена","задачи решено","задач решено"]) + " за один день — твой личный максимум");
+    setText("sumRecordDay", fmtDate(maxDate) + " (+" + maxD + ")");
 
     let streak = 0, bestStreak = 0, streakEnd = dates[0], bestEnd = dates[0];
     for (let i = 0; i < dates.length; i++){
@@ -1083,61 +1087,66 @@ fetch("/api/dashboard-data/{{ username }}/")
     }
     const bestStart = dates[Math.max(0, dates.indexOf(bestEnd) - bestStreak + 1)];
 
-    document.getElementById("streakNum").textContent = bestStreak;
-    document.getElementById("streakDates").textContent =
-        bestStreak > 0 ? (fmtDate(bestStart) + " — " + fmtDate(bestEnd)) : "пока нет серии";
-    document.getElementById("sumStreak").textContent = bestStreak + " " + ruPlural(bestStreak, ["день","дня","дней"]);
+    setText("streakNum", bestStreak);
+    setText("streakDates", bestStreak > 0 ? (fmtDate(bestStart) + " — " + fmtDate(bestEnd)) : "пока нет серии");
+    setText("sumStreak", bestStreak + " " + ruPlural(bestStreak, ["день","дня","дней"]));
 
-    const ratingMin = Math.min(...ratings);
-    const ratingMax = Math.max(...ratings);
-    const ratingPad = Math.max(10, Math.round((ratingMax - ratingMin) * 0.1));
+    const contestCanvas = document.getElementById("contestChart");
 
-    new Chart(document.getElementById("contestChart"), {
-        type:"line",
-        data:{
-            labels: dates.map(fmtDate),
-            datasets:[{
-                label:"Рейтинг",
-                data: ratings,
-                borderColor:"#4A8FD1",
-                backgroundColor:"rgba(74,143,209,.12)",
-                fill:true,
-                borderWidth:2,
-                pointRadius:0,
-                pointHoverRadius:4,
-                tension:.35
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            interaction:{ mode:"index", intersect:false },
-            plugins:{
-                legend:{ display:false },
-                tooltip:{
-                    callbacks:{
-                        label:(item)=> "Рейтинг: " + fmtNum2(item.parsed.y)
-                    }
-                }
+    if (hasContest && contestCanvas && ratings.some(v => v !== null)) {
+        const validRatings = ratings.filter(v => v !== null);
+        const ratingMin = Math.min(...validRatings);
+        const ratingMax = Math.max(...validRatings);
+        const ratingPad = Math.max(10, Math.round((ratingMax - ratingMin) * 0.1));
+
+        new Chart(contestCanvas, {
+            type: "line",
+            data: {
+                labels: dates.map(fmtDate),
+                datasets: [{
+                    label: "Рейтинг",
+                    data: ratings,
+                    borderColor: "#4A8FD1",
+                    backgroundColor: "rgba(74,143,209,.12)",
+                    fill: true,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    tension: .35,
+                    spanGaps: true
+                }]
             },
-            scales:{
-                x:{ grid:{ display:false }, ticks:{ maxTicksLimit:8 } },
-                y:{
-                    grid:{ color:"rgba(244,246,242,.08)" },
-                    min: Math.floor(ratingMin - ratingPad),
-                    max: Math.ceil(ratingMax + ratingPad),
-                    ticks:{
-                        stepSize: 25,
-                        callback:(value)=> fmtNum2(value)
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                interaction:{ mode:"index", intersect:false },
+                plugins:{
+                    legend:{ display:false },
+                    tooltip:{
+                        callbacks:{
+                            label:(item)=> "Рейтинг: " + fmtNum2(item.parsed.y)
+                        }
+                    }
+                },
+                scales:{
+                    x:{ grid:{ display:false }, ticks:{ maxTicksLimit:8 } },
+                    y:{
+                        grid:{ color:"rgba(244,246,242,.08)" },
+                        min: Math.floor(ratingMin - ratingPad),
+                        max: Math.ceil(ratingMax + ratingPad),
+                        ticks:{
+                            stepSize: 25,
+                            callback:(value)=> fmtNum2(value)
+                        }
                     }
                 }
             }
-        }
-    });
+        });
 
-    if (ratings.length > 1){
-        const change = round2(ratings[ratings.length - 1] - ratings[0]);
-        document.getElementById("ratingChangeNum").textContent = (change >= 0 ? "+" : "") + fmtNum2(change);
+        if (validRatings.length > 1){
+            const change = round2(validRatings[validRatings.length - 1] - validRatings[0]);
+            setText("ratingChangeNum", (change >= 0 ? "+" : "") + fmtNum2(change));
+        }
     }
 
 });
