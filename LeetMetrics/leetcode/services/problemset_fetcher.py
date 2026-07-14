@@ -1,60 +1,5 @@
-import json
-
 import requests
-
-
-SKILL_STATS_QUERY = """
-query skillStats($username: String!) {
-  matchedUser(username: $username) {
-    tagProblemCounts {
-      advanced {
-        tagName
-        tagSlug
-        problemsSolved
-      }
-      intermediate {
-        tagName
-        tagSlug
-        problemsSolved
-      }
-      fundamental {
-        tagName
-        tagSlug
-        problemsSolved
-      }
-    }
-  }
-}
-"""
- 
-PROBLEMSET_QUESTION_LIST_BY_TAG_QUERY = """
-query problemsetQuestionListByTag(
-  $categorySlug: String
-  $limit: Int
-  $skip: Int
-  $filters: QuestionListFilterInput
-) {
-  problemsetQuestionList: questionList(
-    categorySlug: $categorySlug
-    limit: $limit
-    skip: $skip
-    filters: $filters
-  ) {
-    total: totalNum
-    questions: data {
-      difficulty
-      frontendQuestionId: questionFrontendId
-      status
-      title
-      titleSlug
-      topicTags {
-        name
-        slug
-      }
-    }
-  }
-}
-"""
+from leetcode.graphql_queries.problemset_queries import SKILL_STATS_QUERY, PROBLEMSET_QUESTION_LIST_BY_TAG_QUERY
 
 class LeetCodeSkillStatsFetcher:
     def __init__(self):
@@ -129,7 +74,5 @@ class LeetCodeSkillStatsFetcher:
         data = response.json()
         return data
 fetcher = LeetCodeSkillStatsFetcher()
-result = fetcher.fetch_skill_stats("hostlessbtw")
-json_string = json.dumps(result, indent=4)
-print(json_string)
+result = fetcher.fetch_skill_stats("vetor")
 print(result)
