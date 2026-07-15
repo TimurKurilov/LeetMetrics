@@ -36,6 +36,65 @@ class LeetCodeUserContestStats(models.Model):
     top_percentage = models.FloatField(default=None, null=True, blank=True)
     
     
+class LeetCodeUserSkillStat(models.Model):
+    class SkillLevel(models.TextChoices):
+        FUNDAMENTAL = "fundamental", "Fundamental"
+        INTERMEDIATE = "intermediate", "Intermediate"
+        ADVANCED = "advanced", "Advanced"
+
+    account = models.ForeignKey(
+        LeetCodeUserAccount,
+        on_delete=models.CASCADE,
+        related_name="skill_stats"
+    )
+
+    level = models.CharField(max_length=20, choices=SkillLevel.choices)
+    tag_name = models.CharField(max_length=100)
+    tag_slug = models.CharField(max_length=100)
+    problems_solved = models.IntegerField(default=0)
+
+    last_synced_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["level", "-problems_solved"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["account", "tag_slug", "level"],
+                name="unique_account_tag_level"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.account.username} - {self.tag_name} ({self.level}): {self.problems_solved}"
+
+class DailySkillStatsSnapshot(models.Model):
+    account = models.ForeignKey(
+        LeetCodeUserAccount,
+        on_delete=models.CASCADE,
+        related_name="daily_skill_snapshots"
+    )
+
+    date = models.DateField(default=timezone.now)
+
+    level = models.CharField(max_length=20, choices=LeetCodeUserSkillStat.SkillLevel.choices)
+    tag_name = models.CharField(max_length=100)
+    tag_slug = models.CharField(max_length=100)
+    problems_solved = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["account", "date", "tag_slug", "level"],
+                name="unique_daily_skill_snapshot"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.account.username} - {self.tag_name} - {self.date}"
+
 class DailyStatsSnapshot(models.Model):
     account = models.ForeignKey(
         LeetCodeUserAccount,
