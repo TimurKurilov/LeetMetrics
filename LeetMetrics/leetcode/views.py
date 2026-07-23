@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from leetcode.services.profile_fetcher import LeetCodeProfileFetcher
 from leetcode.services.contest_fetcher import LeetCodeContestFetcher
-from leetcode.models import LeetCodeUserAccount, LeetCodeUserContestStats
+from leetcode.services.problemset_fetcher import LeetCodeSkillStatsFetcher
+from leetcode.models import LeetCodeUserAccount, LeetCodeUserContestStats, LeetCodeUserSkillStat
 
 def leetcode_userdata(username):
     fetcher = LeetCodeProfileFetcher()
@@ -80,3 +81,37 @@ def save_leetcode_usercontest(username, data):
     local_data = data.copy()
     save_data, created = LeetCodeUserContestStats.objects.update_or_create(account=account, defaults={**local_data})
     return save_data
+
+def leetcode_user_skill_stats(username):
+    fetcher = LeetCodeSkillStatsFetcher()
+    raw_data = fetcher.fetch_skill_stats(username)
+
+    matched = raw_data["data"]["matchedUser"]
+    tag_counts = matched["tagProblemCounts"]
+
+    skills = []
+    for level, tag_list in tag_counts.items():
+        for tag in tag_list:
+            skills.append({
+                "level": level,
+                "tag_name": tag["tagName"],
+                "tag_slug": tag["tagSlug"],
+                "problems_solved": tag["problemsSolved"],
+            })
+    return skills
+
+def save_leetcode_user_skill_stats(username, skills_data):
+    account = LeetCodeUserAccount.objects.get(username=username)
+    saved = []
+    for skill in skills_data:
+        obj, created = LeetCodeUserSkillStat.objects.update_or_create(
+            account=account,
+            tag_slug=skill["tag_slug"],
+            level=skill["level"],
+            defaults={
+                "tag_name": skill["tag_name"],
+                "problems_solved": skill["problems_solved"],
+            }
+        )
+        saved.append(obj)
+    return saved

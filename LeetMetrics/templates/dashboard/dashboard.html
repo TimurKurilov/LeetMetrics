@@ -236,6 +236,8 @@ body{
 .theme-6::before{ background:radial-gradient(circle at 70% 70%, #6B2E24 0%, transparent 60%); }
 .theme-7::before{ background:radial-gradient(circle at 30% 30%, #23417A 0%, transparent 60%); }
 .theme-8::before{ background:radial-gradient(circle at 50% 20%, #6B551E 0%, transparent 65%); }
+.theme-9::before{ background:radial-gradient(circle at 60% 40%, #1E4A5A 0%, transparent 60%); }
+.theme-10::before{ background:radial-gradient(circle at 40% 60%, #2E3A5B 0%, transparent 60%); }
 
 .hero-number{
     font-family:var(--font-mono);
@@ -518,7 +520,96 @@ body{
     .metric-grid.cols-3{ grid-template-columns:1fr 1fr; }
     .stat-strip{ gap:18px; }
     .pair-row{ gap:18px; }
+    .skill-level-section{ gap:12px; }
+    .skill-bar-label{ font-size:10px; }
+    .skill-bar-track{ height:14px; }
 }
+
+/* ---------- skill bars ---------- */
+
+.skill-level-section{
+    margin-top:18px;
+    text-align:left;
+}
+
+.skill-level-title{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:10px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--line);
+}
+
+.skill-bar-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+}
+
+.skill-bar-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink);
+    min-width:110px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.skill-bar-track{
+    flex:1;
+    height:16px;
+    background:rgba(244,246,242,.06);
+    border-radius:4px;
+    overflow:hidden;
+    position:relative;
+}
+
+.skill-bar-fill{
+    height:100%;
+    border-radius:4px;
+    transition:width .6s ease;
+}
+
+.skill-bar-fill.fundamental{ background:linear-gradient(90deg,#2E7A47,#4CAF6E); }
+.skill-bar-fill.intermediate{ background:linear-gradient(90deg,#B8872E,#D9A441); }
+.skill-bar-fill.advanced{ background:linear-gradient(90deg,#C04A3A,#E1584A); }
+
+.skill-bar-count{
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted);
+    min-width:30px;
+    text-align:right;
+}
+
+.skill-total-row{
+    display:flex;
+    justify-content:center;
+    gap:36px;
+    margin-top:20px;
+}
+
+.skill-total-item .num{
+    font-family:var(--font-mono);
+    font-size:22px;
+    font-weight:700;
+}
+
+.skill-total-item .lbl{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+}
+
+.skill-total-item.fundamental .num{ color:var(--easy); }
+.skill-total-item.intermediate .num{ color:var(--medium); }
+.skill-total-item.advanced .num{ color:var(--hard); }
 
 @media (prefers-reduced-motion: reduce){
     .hero-hint .arrow{ animation:none; }
@@ -693,6 +784,68 @@ body{
     </div>
 </section>
 
+<section class="slide theme-9">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Навыки</div>
+        <div class="headline">Твои сильные стороны</div>
+        <div class="sub">Сколько задач решено по каждому тегу — от базовых до продвинутых</div>
+
+        <div class="win" style="text-align:left; max-height:420px; overflow-y:auto;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                {% for level, skills in skills_by_level.items %}
+                    {% if skills %}
+                    <div class="skill-level-section">
+                        <div class="skill-level-title">
+                            {% if level == "fundamental" %}Fundamental{% elif level == "intermediate" %}Intermediate{% else %}Advanced{% endif %}
+                        </div>
+                        {% for skill in skills|slice:":8" %}
+                        <div class="skill-bar-row">
+                            <div class="skill-bar-label">{{ skill.tag_name }}</div>
+                            <div class="skill-bar-track">
+                                <div class="skill-bar-fill {{ level }}" style="width:0%" data-target="{{ skill.problems_solved }}"></div>
+                            </div>
+                            <div class="skill-bar-count">{{ skill.problems_solved }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="skill-total-row">
+            <div class="skill-total-item fundamental">
+                <div class="num" id="skillFundamentalTotal">0</div>
+                <div class="lbl">fundamental</div>
+            </div>
+            <div class="skill-total-item intermediate">
+                <div class="num" id="skillIntermediateTotal">0</div>
+                <div class="lbl">intermediate</div>
+            </div>
+            <div class="skill-total-item advanced">
+                <div class="num" id="skillAdvancedTotal">0</div>
+                <div class="lbl">advanced</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="slide theme-10">
+    <div class="slide-inner" style="max-width:720px;">
+        <div class="eyebrow">Прогресс навыков</div>
+        <div class="headline">Как росли твои теги</div>
+        <div class="sub" id="skillProgressPeriod">загрузка данных…</div>
+        <div class="win" style="text-align:left;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="chart-box tall"><canvas id="skillProgressChart"></canvas></div>
+            </div>
+        </div>
+        <div class="chart-note">hover на линию → название тега и количество задач</div>
+    </div>
+</section>
+
 <section class="slide theme-8">
     <div class="slide-inner">
         <div class="eyebrow">Итоги</div>
@@ -757,6 +910,12 @@ if (hasContest){
 }
 
 const difficultyScore = easy + medium*2 + hard*3;
+
+const skillStats = [
+    {% for skill in skill_stats %}
+    { level:"{{ skill.level }}", tag_name:"{{ skill.tag_name }}", tag_slug:"{{ skill.tag_slug }}", problems_solved:{{ skill.problems_solved }} }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
 
 Chart.defaults.font.family = "'IBM Plex Mono', monospace";
 Chart.defaults.font.size = 11;
@@ -1148,6 +1307,75 @@ fetch("/api/dashboard-data/{{ username }}/")
             setText("ratingChangeNum", (change >= 0 ? "+" : "") + fmtNum2(change));
         }
     }
+
+    const skillDates = data.skill_dates || [];
+    const skills = data.skills || {};
+
+    const skillKeys = Object.keys(skills);
+    if (skillKeys.length && skillDates.length) {
+        setText("skillProgressPeriod", fmtDate(skillDates[0]) + " — " + fmtDate(skillDates[skillDates.length - 1]));
+
+        const skillColors = [
+            "#4CAF6E","#D9A441","#E1584A","#4A8FD1","#E8C468",
+            "#9B59B6","#1ABC9C","#E67E22","#3498DB","#E74C3C"
+        ];
+
+        const skillDatasets = skillKeys.slice(0, 10).map((key, i) => {
+            const s = skills[key];
+            return {
+                label: s.tag_name + " (" + s.level.charAt(0) + ")",
+                data: s.problems_solved,
+                borderColor: skillColors[i % skillColors.length],
+                backgroundColor: "transparent",
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                tension: .35,
+                _base: skillColors[i % skillColors.length]
+            };
+        });
+
+        const allSkillDates = skills[skillKeys[0]].dates || [];
+
+        new Chart(document.getElementById("skillProgressChart"), {
+            type: "line",
+            data: { labels: allSkillDates.map(fmtDate), datasets: skillDatasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (item) => item.dataset.label + ": " + item.parsed.y + " задач"
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display:false }, ticks: { maxTicksLimit: 8 } },
+                    y: { grid: { color: "rgba(244,246,242,.08)" }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    const skillF = skillStats.filter(s => s.level === "fundamental").reduce((a, s) => a + s.problems_solved, 0);
+    const skillI = skillStats.filter(s => s.level === "intermediate").reduce((a, s) => a + s.problems_solved, 0);
+    const skillA = skillStats.filter(s => s.level === "advanced").reduce((a, s) => a + s.problems_solved, 0);
+    setText("skillFundamentalTotal", skillF);
+    setText("skillIntermediateTotal", skillI);
+    setText("skillAdvancedTotal", skillA);
+
+    const skillBars = document.querySelectorAll(".skill-bar-fill[data-target]");
+    skillBars.forEach(bar => {
+        const target = Number(bar.dataset.target) || 0;
+        const maxVal = Math.max(1, ...Array.from(skillBars).map(b => Number(b.dataset.target) || 0));
+        bar.style.width = Math.round((target / maxVal) * 100) + "%";
+    });
 
 });
 

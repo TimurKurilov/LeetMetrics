@@ -2,7 +2,7 @@ import random
 from datetime import timedelta
 
 from django.http import JsonResponse
-from leetcode.models import DailyStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats
+from leetcode.models import DailyStatsSnapshot, DailySkillStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats, LeetCodeUserSkillStat
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 from django.utils import timezone
 
@@ -93,15 +93,80 @@ def generate_fake_snapshots(username, days=90):
             total_participants=total_participants,
             top_percentage=top_percentage,
         )
+
+def create_daily_skill_snapshot(username):
+    account = LeetCodeUserAccount.objects.get(username=username)
+    skill_stats = LeetCodeUserSkillStat.objects.filter(account=account)
+    today = timezone.now().date()
+
+    for stat in skill_stats:
+        DailySkillStatsSnapshot.objects.get_or_create(
+            account=account,
+            date=today,
+            tag_slug=stat.tag_slug,
+            level=stat.level,
+            defaults={
+                "tag_name": stat.tag_name,
+                "problems_solved": stat.problems_solved,
+            }
+        )
+
+def generate_fake_skill_snapshots(username, days=90):
+    account = LeetCodeUserAccount.objects.get(username=username)
+
+    existing_count = DailySkillStatsSnapshot.objects.filter(account=account).count()
+    if existing_count >= days * 5:
+        return None
+
+    last_snapshot = (
+        DailySkillStatsSnapshot.objects.filter(account=account)
+        .order_by("-date")
+        .first()
+    )
+    if not last_snapshot:
+        raise ValueError("Сначала создайте хотя бы один настоящий DailySkillStatsSnapshot.")
+
+    current_date = last_snapshot.date
+    tag_data = {}
+
+    snapshots = DailySkillStatsSnapshot.objects.filter(
+        account=account, date=last_snapshot.date
+    )
+    for snap in snapshots:
+        tag_data[snap.tag_slug] = {
+            "tag_name": snap.tag_name,
+            "level": snap.level,
+            "problems_solved": snap.problems_solved,
+        }
+
+    for _ in range(days):
+        current_date += timedelta(days=1)
+
+        for tag_slug, info in tag_data.items():
+            info["problems_solved"] += random.randint(0, 2)
+
+            DailySkillStatsSnapshot.objects.create(
+                account=account,
+                date=current_date,
+                tag_name=info["tag_name"],
+                tag_slug=tag_slug,
+                level=info["level"],
+                problems_solved=info["problems_solved"],
+            )
         
 def dashboard_data(request, username):
     generate_fake_snapshots(username=username)
+    generate_fake_skill_snapshots(username=username)
 
     account = LeetCodeUserAccount.objects.get(
         username=username
     )
 
     snapshots = DailyStatsSnapshot.objects.filter(
+        account=account
+    ).order_by("date")
+
+    skill_snapshots = DailySkillStatsSnapshot.objects.filter(
         account=account
     ).order_by("date")
 
@@ -112,17 +177,37 @@ def dashboard_data(request, username):
         "medium": [],
         "hard": [],
         "rating": [],
+        "skill_dates": [],
+        "skills": {},
     }
 
     for snapshot in snapshots:
         data["dates"].append(
             snapshot.date.strftime("%Y-%m-%d")
         )
-
         data["total"].append(snapshot.total)
         data["easy"].append(snapshot.easy)
         data["medium"].append(snapshot.medium)
         data["hard"].append(snapshot.hard)
         data["rating"].append(snapshot.contest_rating)
+
+    seen_dates = set()
+    for snap in skill_snapshots:
+        date_str = snap.date.strftime("%Y-%m-%d")
+        if date_str not in seen_dates:
+            data["skill_dates"].append(date_str)
+            seen_dates.add(date_str)
+
+        key = f"{snap.tag_slug}_{snap.level}"
+        if key not in data["skills"]:
+            data["skills"][key] = {
+                "tag_name": snap.tag_name,
+                "tag_slug": snap.tag_slug,
+                "level": snap.level,
+                "dates": [],
+                "problems_solved": [],
+            }
+        data["skills"][key]["dates"].append(date_str)
+        data["skills"][key]["problems_solved"].append(snap.problems_solved)
 
     return JsonResponse(data)
