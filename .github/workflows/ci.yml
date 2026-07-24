@@ -16,10 +16,31 @@ jobs:
       - name: Build and start services
         run: docker compose up -d --build
 
-      - name: Run migrations and collectstatic
+      - name: Wait for services
         run: |
-          docker compose exec -T web python manage.py migrate
-          docker compose exec -T web python manage.py collectstatic --noinput
+          echo "=== Waiting for db and redis ==="
+          for i in $(seq 1 30); do
+            DB_STATUS=$(docker compose ps db --format '{{.Health}}' 2>/dev/null || echo "unknown")
+            REDIS_STATUS=$(docker compose ps redis --format '{{.Health}}' 2>/dev/null || echo "unknown")
+            echo "Attempt $i: db=$DB_STATUS redis=$REDIS_STATUS"
+            if [ "$DB_STATUS" = "healthy" ] && [ "$REDIS_STATUS" = "healthy" ]; then
+              echo "Services are healthy"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Services not ready in time"
+              docker compose ps
+              docker compose logs
+              exit 1
+            fi
+            sleep 3
+          done
+
+      - name: Run migrations
+        run: docker compose exec -T web python manage.py migrate
+
+      - name: Collect static
+        run: docker compose exec -T web python manage.py collectstatic --noinput
 
       - name: Wait for app
         run: |
@@ -33,6 +54,7 @@ jobs:
             sleep 5
           done
           echo "App failed to start"
+          docker compose logs web
           exit 1
 
       - name: Test startpage
@@ -40,6 +62,10 @@ jobs:
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/)
           echo "Startpage returned HTTP $HTTP_CODE"
           [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
 
       - name: Cleanup
         if: always()
