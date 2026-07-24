@@ -10,6 +10,7 @@ constantly==23.10.4
 cryptography==45.0.5
 daphne==4.2.1
 Django==5.2
+django-redis==5.4.0
 h11==0.16.0
 hyperlink==21.0.0
 idna==3.18

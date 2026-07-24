@@ -1,10 +1,16 @@
 from django.shortcuts import render
+from django.core.cache import cache
 from leetcode.services.profile_fetcher import LeetCodeProfileFetcher
 from leetcode.services.contest_fetcher import LeetCodeContestFetcher
 from leetcode.services.problemset_fetcher import LeetCodeSkillStatsFetcher
 from leetcode.models import LeetCodeUserAccount, LeetCodeUserContestStats, LeetCodeUserSkillStat
 
 def leetcode_userdata(username):
+    cache_key = f"leetcode_profile_{username}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     fetcher = LeetCodeProfileFetcher()
     raw_data = fetcher.fetch_profile(username)
     
@@ -39,9 +45,15 @@ def leetcode_userdata(username):
             "total": total,
         }
     }
+    cache.set(cache_key, data, 60 * 30)
     return data
 
 def leetcode_usercontest(username):
+    cache_key = f"leetcode_contest_{username}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     fetcher = LeetCodeContestFetcher()
     raw_data = fetcher.fetch_contest(username)
     matched = raw_data["data"]["userContestRanking"]
@@ -53,7 +65,6 @@ def leetcode_usercontest(username):
             "total_participants": None,
             "top_percentage": None,
         }
-        return contest_data
     else:
         attendedcount = matched["attendedContestsCount"]
         rating = matched["rating"]
@@ -68,7 +79,8 @@ def leetcode_usercontest(username):
             "total_participants": totalparticipants,
             "top_percentage": toppercentage,
         }
-        return contest_data
+    cache.set(cache_key, contest_data, 60 * 30)
+    return contest_data
 
 def save_leetcode_userdata(username, data):
     local_data = data.copy()
@@ -83,6 +95,11 @@ def save_leetcode_usercontest(username, data):
     return save_data
 
 def leetcode_user_skill_stats(username):
+    cache_key = f"leetcode_skill_stats_{username}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     fetcher = LeetCodeSkillStatsFetcher()
     raw_data = fetcher.fetch_skill_stats(username)
 
@@ -98,6 +115,7 @@ def leetcode_user_skill_stats(username):
                 "tag_slug": tag["tagSlug"],
                 "problems_solved": tag["problemsSolved"],
             })
+    cache.set(cache_key, skills, 60 * 30)
     return skills
 
 def save_leetcode_user_skill_stats(username, skills_data):

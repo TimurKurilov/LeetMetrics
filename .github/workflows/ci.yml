@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start services
+        run: docker compose up -d --build
+
+      - name: Run migrations and collectstatic
+        run: |
+          docker compose exec -T web python manage.py migrate
+          docker compose exec -T web python manage.py collectstatic --noinput
+
+      - name: Wait for app
+        run: |
+          for i in $(seq 1 30); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/ 2>/dev/null || echo "000")
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+              echo "App is ready (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo "Waiting... attempt $i (got $HTTP_CODE)"
+            sleep 5
+          done
+          echo "App failed to start"
+          exit 1
+
+      - name: Test startpage
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/)
+          echo "Startpage returned HTTP $HTTP_CODE"
+          [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down

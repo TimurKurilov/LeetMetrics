@@ -2,6 +2,7 @@ import random
 from datetime import timedelta
 
 from django.http import JsonResponse
+from django.core.cache import cache
 from leetcode.models import DailyStatsSnapshot, DailySkillStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats, LeetCodeUserSkillStat
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 from django.utils import timezone
@@ -15,7 +16,7 @@ def create_daily_snapshot(username):
     contest = account.contest_stats
     today = timezone.now().date()
     
-    DailyStatsSnapshot.objects.get_or_create(
+    _, created = DailyStatsSnapshot.objects.get_or_create(
         account=account,
         date=today,
         defaults={
@@ -33,6 +34,8 @@ def create_daily_snapshot(username):
             "top_percentage": contest.top_percentage if contest else None,
         }
     )
+    if created:
+        cache.delete(f"dashboard_json_{username}")
     
 def generate_fake_snapshots(username, days=90):
     account = LeetCodeUserAccount.objects.select_related("contest_stats").get(username=username)
@@ -99,8 +102,9 @@ def create_daily_skill_snapshot(username):
     skill_stats = LeetCodeUserSkillStat.objects.filter(account=account)
     today = timezone.now().date()
 
+    created_any = False
     for stat in skill_stats:
-        DailySkillStatsSnapshot.objects.get_or_create(
+        _, created = DailySkillStatsSnapshot.objects.get_or_create(
             account=account,
             date=today,
             tag_slug=stat.tag_slug,
@@ -110,6 +114,10 @@ def create_daily_skill_snapshot(username):
                 "problems_solved": stat.problems_solved,
             }
         )
+        if created:
+            created_any = True
+    if created_any:
+        cache.delete(f"dashboard_json_{username}")
 
 def generate_fake_skill_snapshots(username, days=90):
     account = LeetCodeUserAccount.objects.get(username=username)
@@ -155,6 +163,11 @@ def generate_fake_skill_snapshots(username, days=90):
             )
         
 def dashboard_data(request, username):
+    cache_key = f"dashboard_json_{username}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return JsonResponse(cached)
+
     generate_fake_snapshots(username=username)
     generate_fake_skill_snapshots(username=username)
 
@@ -210,4 +223,5 @@ def dashboard_data(request, username):
         data["skills"][key]["dates"].append(date_str)
         data["skills"][key]["problems_solved"].append(snap.problems_solved)
 
+    cache.set(cache_key, data, 60 * 60)
     return JsonResponse(data)

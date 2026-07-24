@@ -1,7 +1,9 @@
 from django.shortcuts import render
+from django.views.decorators.cache import cache_page
 from leetcode.services.snapshot import create_daily_snapshot, create_daily_skill_snapshot, generate_fake_snapshots, generate_fake_skill_snapshots
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest, leetcode_user_skill_stats, save_leetcode_user_skill_stats
 
+@cache_page(60 * 15)
 def dashboard(request, username):
     profile_data = leetcode_userdata(username=username)
     contest_data = leetcode_usercontest(username=username)
