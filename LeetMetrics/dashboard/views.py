@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from leetcode.services.snapshot import create_daily_snapshot, create_daily_skill_snapshot, generate_fake_snapshots, generate_fake_skill_snapshots
@@ -5,9 +7,14 @@ from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcod
 
 @cache_page(60 * 15)
 def dashboard(request, username):
-    profile_data = leetcode_userdata(username=username)
-    contest_data = leetcode_usercontest(username=username)
-    skill_stats = leetcode_user_skill_stats(username=username)
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        future_profile = executor.submit(leetcode_userdata, username)
+        future_contest = executor.submit(leetcode_usercontest, username)
+        future_skills = executor.submit(leetcode_user_skill_stats, username)
+
+        profile_data = future_profile.result(timeout=5)
+        contest_data = future_contest.result(timeout=5)
+        skill_stats = future_skills.result(timeout=5)
 
     save_leetcode_userdata(username, profile_data)
     save_leetcode_usercontest(username, contest_data)
