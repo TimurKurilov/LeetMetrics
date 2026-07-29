@@ -66,6 +66,7 @@ def generate_fake_snapshots(username, days=90):
     total_participants = last_snapshot.total_participants
     top_percentage = last_snapshot.top_percentage
 
+    snapshots = []
     for _ in range(days):
         current_date += timedelta(days=1)
 
@@ -81,7 +82,7 @@ def generate_fake_snapshots(username, days=90):
         if has_contest:
             contest_rating += random.randint(-10, 15)
 
-        DailyStatsSnapshot.objects.create(
+        snapshots.append(DailyStatsSnapshot(
             account=account,
             date=current_date,
             ranking=ranking,
@@ -95,7 +96,8 @@ def generate_fake_snapshots(username, days=90):
             attended_contests=attended_contests,
             total_participants=total_participants,
             top_percentage=top_percentage,
-        )
+        ))
+    DailyStatsSnapshot.objects.bulk_create(snapshots)
 
 def create_daily_skill_snapshot(username):
     account = LeetCodeUserAccount.objects.get(username=username)
@@ -147,20 +149,22 @@ def generate_fake_skill_snapshots(username, days=90):
             "problems_solved": snap.problems_solved,
         }
 
+    snapshots = []
     for _ in range(days):
         current_date += timedelta(days=1)
 
         for tag_slug, info in tag_data.items():
             info["problems_solved"] += random.randint(0, 2)
 
-            DailySkillStatsSnapshot.objects.create(
+            snapshots.append(DailySkillStatsSnapshot(
                 account=account,
                 date=current_date,
                 tag_name=info["tag_name"],
                 tag_slug=tag_slug,
                 level=info["level"],
                 problems_solved=info["problems_solved"],
-            )
+            ))
+    DailySkillStatsSnapshot.objects.bulk_create(snapshots)
         
 def dashboard_data(request, username):
     cache_key = f"dashboard_json_{username}"
