@@ -1056,16 +1056,58 @@ new Chart(document.getElementById("difficultyChart"), {
     }
 });
 
-fetch("/api/dashboard-data/{{ username }}/")
-.then(r => r.json())
-.then(data => {
+function loadDashboardData(){
 
-    const dates   = data.dates  || [];
-    const totals  = data.total  || [];
-    const easyD   = data.easy   || [];
-    const mediumD = data.medium || [];
-    const hardD   = data.hard   || [];
-    const ratings = (data.rating || []).map(v => v === null || v === undefined ? null : round2(v));
+    fetch("/api/dashboard-data/hostlessbtw/")
+        .then(r => r.json())
+        .then(data => {
+
+            if(data.status === "generating"){
+                setTimeout(loadDashboardData, 3000);
+                return;
+            }
+
+
+            const dates   = data.dates || [];
+            const totals  = data.total || [];
+            const easyD   = data.easy || [];
+            const mediumD = data.medium || [];
+            const hardD   = data.hard || [];
+            const ratings = (data.rating || [])
+                .map(v => v === null || v === undefined ? null : round2(v));
+
+
+            if (!dates.length) {
+                console.log("Нет данных");
+                return;
+            }
+
+
+            renderDashboard({
+                dates,
+                totals,
+                easyD,
+                mediumD,
+                hardD,
+                ratings,
+                skill_dates: data.skill_dates || [],
+                skills: data.skills || {}
+            });
+
+        });
+
+}
+
+loadDashboardData();
+
+function renderDashboard(data){
+
+    const dates   = data.dates   || [];
+    const totals  = data.totals  || [];
+    const easyD   = data.easyD   || [];
+    const mediumD = data.mediumD || [];
+    const hardD   = data.hardD   || [];
+    const ratings = data.ratings || [];
 
     if (!dates.length) return;
 
@@ -1377,7 +1419,7 @@ fetch("/api/dashboard-data/{{ username }}/")
         bar.style.width = Math.round((target / maxVal) * 100) + "%";
     });
 
-});
+}
 
 document.getElementById("downloadBtn").addEventListener("click", ()=>{
     const card = document.getElementById("summaryCard");

@@ -2,9 +2,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .tasks import save_all_data
 from django.shortcuts import render
-from django.views.decorators.cache import cache_page
 from leetcode.views import leetcode_userdata, leetcode_usercontest, leetcode_user_skill_stats
-@cache_page(60 * 15)
+
 def dashboard(request, username):
     with ThreadPoolExecutor(max_workers=3) as executor:
         future_profile = executor.submit(leetcode_userdata, username)

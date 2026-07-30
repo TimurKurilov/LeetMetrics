@@ -68,11 +68,9 @@ class LeetCodeSkillStatsFetcher:
             json={
                 "query": PROBLEMSET_QUESTION_LIST_BY_TAG_QUERY,
                 "variables": variables
-            }
+            },
+            timeout=10
         )
 
         data = response.json()
         return data
-fetcher = LeetCodeSkillStatsFetcher()
-result = fetcher.fetch_skill_stats("vetor")
-print(result)

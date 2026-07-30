@@ -11,7 +11,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+  celery:
+    build: .
+    image: celery:latest
+    container_name: celery
+    restart: always
+    command: celery -A LeetMetrics worker --loglevel=info
+    environment:
+      - DJANGO_SETTINGS_MODULE=LeetMetrics.settings
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+    env_file:
+      - ./.env
+    depends_on:
+      redis:
+        condition: service_healthy
   db:
     image: postgres:15.0-alpine
     volumes:
@@ -26,6 +41,8 @@ services:
 
   web:
     build: .
+    image: web:latest
+    container_name: web
     restart: always
     environment:
       - DJANGO_SETTINGS_MODULE=LeetMetrics.settings
@@ -41,7 +58,7 @@ services:
         condition: service_healthy
 
   nginx:
-    image: nginx:1.21.3-alpine
+    image: nginx:latest
     ports:
       - "80:80"
     volumes:

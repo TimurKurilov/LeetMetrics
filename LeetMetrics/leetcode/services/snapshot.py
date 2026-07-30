@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.http import JsonResponse
 from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 from leetcode.models import DailyStatsSnapshot, DailySkillStatsSnapshot, LeetCodeUserAccount, LeetCodeUserContestStats, LeetCodeUserSkillStat
 from leetcode.views import leetcode_userdata, leetcode_usercontest, save_leetcode_userdata, save_leetcode_usercontest
 from django.utils import timezone
@@ -165,19 +166,23 @@ def generate_fake_skill_snapshots(username, days=90):
                 problems_solved=info["problems_solved"],
             ))
     DailySkillStatsSnapshot.objects.bulk_create(snapshots)
-        
+    
+#@cache_page(60 * 15)
 def dashboard_data(request, username):
     cache_key = f"dashboard_json_{username}"
     cached = cache.get(cache_key)
     if cached is not None:
         return JsonResponse(cached)
 
-    generate_fake_snapshots(username=username)
-    generate_fake_skill_snapshots(username=username)
-
-    account = LeetCodeUserAccount.objects.get(
+    account = LeetCodeUserAccount.objects.filter(
         username=username
-    )
+    ).first()
+
+    if account is None:
+        return JsonResponse({
+            "status": "generating",
+            "message": "Данные еще собираются"
+        }, status=202)
 
     snapshots = DailyStatsSnapshot.objects.filter(
         account=account
@@ -227,5 +232,5 @@ def dashboard_data(request, username):
         data["skills"][key]["dates"].append(date_str)
         data["skills"][key]["problems_solved"].append(snap.problems_solved)
 
-    cache.set(cache_key, data, 60 * 60)
+    #cache.set(cache_key, data, 60 * 60)
     return JsonResponse(data)
