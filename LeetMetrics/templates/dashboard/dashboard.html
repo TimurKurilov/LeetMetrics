@@ -1058,7 +1058,7 @@ new Chart(document.getElementById("difficultyChart"), {
 
 function loadDashboardData(){
 
-    fetch("/api/dashboard-data/hostlessbtw/")
+    fetch("/api/dashboard-data/{{ username }}/")
         .then(r => r.json())
         .then(data => {
 

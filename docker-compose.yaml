@@ -27,6 +27,21 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+  celery-beat:
+    build: .
+    container_name: celery-beat
+    restart: always
+    command: celery -A LeetMetrics beat --loglevel=info
+    environment:
+      - DJANGO_SETTINGS_MODULE=LeetMetrics.settings
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+    env_file:
+      - ./.env
+    depends_on:
+      redis:
+        condition: service_healthy
   db:
     image: postgres:15.0-alpine
     volumes:
