@@ -106,7 +106,7 @@ CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_BEAT_SCHEDULE = {
     "update-all-users-daily": {
         "task": "dashboard.tasks.update_all_users",
-        "schedule": crontab(hour=0, minute=0), # для тестов "schedule": 60 <- раз в минуту 
+        "schedule": 60 #<- раз в минуту  "schedule": crontab(hour=0, minute=0), # для прода 
     },
 }
 
