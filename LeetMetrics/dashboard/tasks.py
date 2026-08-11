@@ -1,4 +1,5 @@
 from django.utils.timezone import now
+from celery.utils.log import get_task_logger
 from leetcode.views import save_leetcode_userdata, save_leetcode_usercontest, save_leetcode_user_skill_stats
 from leetcode.services.snapshot import create_daily_snapshot, create_daily_skill_snapshot, generate_fake_snapshots, generate_fake_skill_snapshots
 from concurrent.futures import ThreadPoolExecutor
@@ -8,13 +9,30 @@ from leetcode.views import leetcode_userdata, leetcode_usercontest, leetcode_use
 from django.core.cache import cache
 from celery import shared_task
 
+logger = get_task_logger(__name__)
+
 @shared_task
 def save_all_data(username, profile_data, contest_data, skill_stats):
     
-    job = SyncJob.objects.get(account__username=username)
+    account = LeetCodeUserAccount.objects.filter(username=username).first()
+    if account is None:
+        logger.info(f"Пользователь {username} не найден. Создаём аккаунт в базе...")
+        try:
+            save_leetcode_userdata(username, profile_data)
+            save_leetcode_usercontest(username, contest_data)
+            save_leetcode_user_skill_stats(username, skill_stats)
+            account = LeetCodeUserAccount.objects.filter(username=username).first()
+        except Exception as e:
+            logger.error(f"Не удалось создать пользователя {username}: {e}")
+            return
+    if not account:
+        logger.error(f"Критическая ошибка: Пользователь {username} отсутствует в БД.")
+        return
+    job, created = SyncJob.objects.get_or_create(account=account)
     job.status = SyncJob.SyncStatus.RUNNING
     job.started_at = now()
     job.save()
+    logger.info(f"[SUCCESS] Sync for {username} started now")
     try:
         save_leetcode_userdata(username, profile_data)
         print("save_leetcode_userdata")
@@ -44,12 +62,14 @@ def save_all_data(username, profile_data, contest_data, skill_stats):
         job.status = SyncJob.SyncStatus.FINISHED
         job.error = None
         job.save()
+        logger.info(f"[SUCCESS] Sync for {username} completed in {(job.finished_at - job.started_at).total_seconds():.2f}s")
     except Exception as e:
         job.finished_at = now()
         job.seconds_running = int((job.finished_at - job.started_at).total_seconds())
         job.status = SyncJob.SyncStatus.FAILED
         job.error = str(e)
         job.save()
+        logger.info(f"[FAILED] Sync for {username} failed after {job.seconds_running}s: {job.error}")
     
 @shared_task
 def update_all_users():

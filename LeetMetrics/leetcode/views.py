@@ -82,29 +82,6 @@ def leetcode_usercontest(username):
     cache.set(cache_key, contest_data, 60 * 30)
     return contest_data
 
-def save_leetcode_userdata(username, data):
-    print("USERNAME:", username)
-    print("DATA:", data)
-
-    local_data = data.copy()
-    submission_data = local_data.pop("submission")
-
-    save_data, created = LeetCodeUserAccount.objects.update_or_create(
-        username=username,
-        defaults={**local_data, **submission_data}
-    )
-
-    print("CREATED:", created)
-    print("ACCOUNT:", save_data)
-
-    return save_data
-
-def save_leetcode_usercontest(username, data):
-    account = LeetCodeUserAccount.objects.get(username=username)
-    local_data = data.copy()
-    save_data, created = LeetCodeUserContestStats.objects.update_or_create(account=account, defaults={**local_data})
-    return save_data
-
 def leetcode_user_skill_stats(username):
     cache_key = f"leetcode_skill_stats_{username}"
     cached = cache.get(cache_key)
@@ -128,6 +105,23 @@ def leetcode_user_skill_stats(username):
             })
     cache.set(cache_key, skills, 60 * 30)
     return skills
+
+def save_leetcode_userdata(username, data):
+    local_data = data.copy()
+    submission_data = local_data.pop("submission")
+
+    save_data, created = LeetCodeUserAccount.objects.update_or_create(
+        username=username,
+        defaults={**local_data, **submission_data}
+    )
+
+    return save_data
+
+def save_leetcode_usercontest(username, data):
+    account = LeetCodeUserAccount.objects.get(username=username)
+    local_data = data.copy()
+    save_data, created = LeetCodeUserContestStats.objects.update_or_create(account=account, defaults={**local_data})
+    return save_data
 
 def save_leetcode_user_skill_stats(username, skills_data):
     account = LeetCodeUserAccount.objects.get(username=username)

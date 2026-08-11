@@ -17,6 +17,7 @@ class SyncJob(models.Model):
                 related_name="sync_jobs"
             )
     status = models.CharField(max_length=20, choices=SyncStatus.choices, default=SyncStatus.NOT_START, db_index=True,)
+    started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     seconds_running = models.IntegerField(default=0)
     error = models.TextField(null=True, blank=True)
