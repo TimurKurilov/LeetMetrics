@@ -238,6 +238,9 @@ body{
 .theme-8::before{ background:radial-gradient(circle at 50% 20%, #6B551E 0%, transparent 65%); }
 .theme-9::before{ background:radial-gradient(circle at 60% 40%, #1E4A5A 0%, transparent 60%); }
 .theme-10::before{ background:radial-gradient(circle at 40% 60%, #2E3A5B 0%, transparent 60%); }
+.theme-11::before{ background:radial-gradient(circle at 50% 30%, #1E6B4A 0%, transparent 60%); }
+.theme-12::before{ background:radial-gradient(circle at 60% 25%, #2E5B41 0%, transparent 60%); }
+.theme-13::before{ background:radial-gradient(circle at 40% 70%, #6B4A2E 0%, transparent 60%); }
 
 .hero-number{
     font-family:var(--font-mono);
@@ -611,6 +614,196 @@ body{
 .skill-total-item.intermediate .num{ color:var(--medium); }
 .skill-total-item.advanced .num{ color:var(--hard); }
 
+/* ---------- skill balance ---------- */
+
+.balance-card{
+    text-align:left;
+    background:rgba(244,246,242,.04);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.balance-card .bc-icon{
+    font-family:var(--font-mono);
+    font-size:24px;
+    min-width:40px;
+    text-align:center;
+}
+
+.balance-card.top .bc-icon{ color:var(--easy); }
+.balance-card.bottom .bc-icon{ color:var(--hard); }
+
+.balance-card .bc-text{ font-size:13px; color:var(--muted); line-height:1.4; }
+.balance-card .bc-text .bc-label{ font-size:10px; color:var(--faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+.balance-card .bc-text b{ color:var(--ink); font-weight:600; }
+
+.balance-gauge{
+    margin-top:22px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.balance-score{
+    font-family:var(--font-mono);
+    font-size:min(20vw,96px);
+    font-weight:700;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+}
+
+.balance-scale{
+    width:100%;
+    max-width:480px;
+    margin-top:14px;
+}
+
+.balance-scale-labels{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--faint);
+    margin-bottom:6px;
+}
+
+.balance-bar{
+    height:12px;
+    border-radius:6px;
+    background:rgba(244,246,242,.06);
+    position:relative;
+    overflow:hidden;
+}
+
+.balance-fill{
+    height:100%;
+    width:0%;
+    border-radius:6px;
+    background:linear-gradient(90deg,#2E7A47,#4CAF6E);
+    transition:width .8s ease;
+}
+
+.balance-verdict{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+    text-align:center;
+}
+
+.balance-verdict b{ color:var(--ink); font-weight:600; }
+
+@media(max-width:600px){
+    .balance-score{ font-size:72px; }
+}
+
+/* ---------- strength (где ты силён) ---------- */
+
+.strength-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+}
+
+.strength-row:last-child{ border-bottom:none; }
+
+.strength-rank{
+    font-family:var(--font-mono);
+    font-size:18px;
+    font-weight:700;
+    color:var(--gold);
+    min-width:24px;
+}
+
+.strength-name{
+    flex:1;
+    font-family:var(--font-mono);
+    font-size:16px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.strength-val{
+    font-family:var(--font-mono);
+    font-size:15px;
+    color:var(--easy);
+    font-weight:600;
+}
+
+/* ---------- abandoned + focus ---------- */
+
+.abandoned-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+}
+
+.abandoned-item:last-child{ border-bottom:none; }
+
+.abandoned-name{
+    flex:1;
+    font-family:var(--font-mono);
+    font-size:14px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.abandoned-days{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--muted);
+}
+
+.abandoned-days b{ color:var(--hard); }
+
+.focus-card{
+    text-align:left;
+    background:rgba(244,246,242,.04);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    margin-top:18px;
+}
+
+.focus-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+}
+
+.focus-tag{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:26px;
+    line-height:1.1;
+    margin-bottom:6px;
+}
+
+.focus-text{
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+}
+
+.focus-text b{ color:var(--ink); font-weight:600; }
+.focus-text .focus-gain{ color:var(--easy); font-weight:700; }
+
 @media (prefers-reduced-motion: reduce){
     .hero-hint .arrow{ animation:none; }
     .wrapped-scroll{ scroll-behavior:auto; }
@@ -846,6 +1039,99 @@ body{
     </div>
 </section>
 
+<section class="slide theme-11">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Анализ навыков</div>
+        <div class="headline">Твои сильные и слабые стороны</div>
+        <div class="sub">Куда ты вкладываешь усилия — а что оставляешь без внимания</div>
+
+        <div class="balance-card top">
+            <div class="bc-icon">▲</div>
+            <div class="bc-text">
+                <div class="bc-label">главный навык</div>
+                <b id="balTopName">—</b> · <span id="balTopCount">0</span> задач
+            </div>
+        </div>
+
+        <div class="balance-card bottom">
+            <div class="bc-icon">▼</div>
+            <div class="bc-text">
+                <div class="bc-label">самый запущенный</div>
+                <b id="balBottomName">—</b> · <span id="balBottomCount">0</span> задач
+            </div>
+        </div>
+
+        <div class="balance-gauge">
+            <div class="balance-score" id="balanceScore">0</div>
+            <div class="sub" style="margin:6px 0 0;">баланс из 100</div>
+            <div class="balance-scale">
+                <div class="balance-scale-labels">
+                    <span>перекос</span>
+                    <span>идеально</span>
+                </div>
+                <div class="balance-bar">
+                    <div class="balance-fill" id="balanceFill" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="balance-verdict" id="balanceVerdict">загрузка…</div>
+    </div>
+</section>
+
+<section class="slide theme-12">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Где ты силён</div>
+        <div class="headline">Твои сильнейшие навыки</div>
+        <div class="sub">Не самые популярные — а те, где ты эффективнее всего</div>
+
+        <div class="win" style="text-align:left;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="strength-row">
+                    <div class="strength-rank">1</div>
+                    <div class="strength-name" id="strName1">—</div>
+                    <div class="strength-val" id="strVal1">—</div>
+                </div>
+                <div class="strength-row">
+                    <div class="strength-rank">2</div>
+                    <div class="strength-name" id="strName2">—</div>
+                    <div class="strength-val" id="strVal2">—</div>
+                </div>
+                <div class="strength-row">
+                    <div class="strength-rank">3</div>
+                    <div class="strength-name" id="strName3">—</div>
+                    <div class="strength-val" id="strVal3">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insight-card">
+            <div class="ic-num" id="strBest">—</div>
+            <div class="ic-text"><b id="strBestName">—</b> — твоя самая надёжная зона.</div>
+        </div>
+    </div>
+</section>
+
+<section class="slide theme-13">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Заброшенные навыки</div>
+        <div class="headline">Что ты давно не трогал</div>
+        <div class="sub">Топ навыков, которые пылятся без работы</div>
+
+        <div class="win" style="text-align:left; max-height:320px; overflow-y:auto;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body" id="abandonedList">загрузка…</div>
+        </div>
+
+        <div class="focus-card">
+            <div class="focus-label">🎯 следующий фокус</div>
+            <div class="focus-tag" id="focusTag">—</div>
+            <div class="focus-text" id="focusText">загрузка…</div>
+        </div>
+    </div>
+</section>
+
 <section class="slide theme-8">
     <div class="slide-inner">
         <div class="eyebrow">Итоги</div>
@@ -916,6 +1202,152 @@ const skillStats = [
     { level:"{{ skill.level }}", tag_name:"{{ skill.tag_name }}", tag_slug:"{{ skill.tag_slug }}", problems_solved:{{ skill.problems_solved }} }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
+
+function getMainSkills(){
+    const active = skillStats.filter(s => s.problems_solved > 0);
+    if (!active.length) return [];
+    const sorted = active.slice().sort((a,b)=> b.problems_solved - a.problems_solved);
+    const mainCount = Math.max(3, Math.ceil(sorted.length * 0.6));
+    return sorted.slice(0, mainCount);
+}
+
+function renderSkillBalance(){
+    const active = skillStats.filter(s => s.problems_solved > 0);
+    if (!active.length){
+        setText("balTopName", "—");
+        setText("balTopCount", 0);
+        setText("balBottomName", "—");
+        setText("balBottomCount", 0);
+        setText("balanceScore", 0);
+        const verdictEl = document.getElementById("balanceVerdict");
+        if (verdictEl) verdictEl.innerHTML = "Пока нет данных по навыкам";
+        return;
+    }
+
+    const top    = active.reduce((a,b)=> b.problems_solved > a.problems_solved ? b : a);
+    const bottom = getMainSkills().reduce((a,b)=> b.problems_solved < a.problems_solved ? b : a);
+
+    const total = active.reduce((a,s)=> a + s.problems_solved, 0);
+    const n = active.length;
+    const sorted = active.map(s => s.problems_solved).sort((a,b)=> a - b);
+
+    let gini = 0;
+    sorted.forEach((v, i)=>{
+        gini += ((2 * (i + 1) - n - 1) / (n * total)) * v;
+    });
+    const balance = Math.max(0, Math.min(100, Math.round((1 - gini) * 100)));
+
+    const share = Math.round((top.problems_solved / total) * 100);
+    const gap = top.problems_solved - bottom.problems_solved;
+
+    let verdict;
+    if (balance >= 75){
+        verdict = "Распределение почти идеальное — ты равномерно прокачиваешь все направления. Слабых звеньев почти нет.";
+    } else if (balance >= 55){
+        verdict = "Перекос умеренный: <b>" + top.tag_name + "</b> в лидерах (" + share + "% всех задач), но <b>" + bottom.tag_name + "</b> отстаёт. Стоит подтянуть слабое звено.";
+    } else {
+        verdict = "Сильный перекос: <b>" + top.tag_name + "</b> тянет на себя " + share + "% задач, а <b>" + bottom.tag_name + "</b> почти заброшен (разрыв " + gap + " задач). Попробуй сменить фокус.";
+    }
+
+    setText("balTopName", top.tag_name);
+    setText("balTopCount", top.problems_solved);
+    setText("balBottomName", bottom.tag_name);
+    setText("balBottomCount", bottom.problems_solved);
+
+    const scoreEl = document.getElementById("balanceScore");
+    const fillEl = document.getElementById("balanceFill");
+    if (scoreEl) scoreEl.textContent = balance;
+    if (fillEl){
+        requestAnimationFrame(()=>{ fillEl.style.width = balance + "%"; });
+    }
+    const verdictEl = document.getElementById("balanceVerdict");
+    if (verdictEl) verdictEl.innerHTML = verdict;
+}
+
+renderSkillBalance();
+
+function renderFocus(){
+    const main = getMainSkills();
+    const tagEl = document.getElementById("focusTag");
+    const textEl = document.getElementById("focusText");
+    if (!main.length || !tagEl || !textEl){
+        if (tagEl) tagEl.textContent = "—";
+        if (textEl) textEl.innerHTML = "Пока нет данных по навыкам";
+        return;
+    }
+    const focus = main.reduce((a,b)=> b.problems_solved < a.problems_solved ? b : a);
+    const avg = Math.round(main.reduce((a,s)=> a + s.problems_solved, 0) / main.length);
+    const gap = Math.max(0, avg - focus.problems_solved);
+    tagEl.textContent = focus.tag_name;
+    textEl.innerHTML = "Ты решил <b>" + focus.problems_solved + "</b> задач по " + focus.tag_name +
+        ", хотя твой средний показатель по основным навыкам — <b>" + avg + "</b>. " +
+        "Потенциальная зона роста: <span class='focus-gain'>+" + gap + " задач</span> до среднего уровня.";
+}
+
+function fmtEff(eff){
+    return (Math.round(eff * 10) / 10) + "/день";
+}
+
+function renderStrength(skills){
+    const rows = [];
+    Object.keys(skills || {}).forEach(key => {
+        const s = skills[key];
+        const solved = s.problems_solved || [];
+        if (!solved.length) return;
+        let growth = 0, activeDays = 0, prev = 0;
+        solved.forEach(v => {
+            if (v > prev){ growth += v - prev; activeDays++; }
+            prev = v;
+        });
+        rows.push({
+            name: s.tag_name,
+            solved: solved[solved.length - 1],
+            eff: activeDays ? growth / activeDays : 0
+        });
+    });
+    rows.sort((a,b)=> b.eff - a.eff);
+    const top3 = rows.slice(0, 3);
+    for (let i = 0; i < 3; i++){
+        setText("strName" + (i+1), top3[i] ? top3[i].name : "—");
+        setText("strVal" + (i+1), top3[i] ? fmtEff(top3[i].eff) : "—");
+    }
+    if (top3[0]){
+        setText("strBest", fmtEff(top3[0].eff));
+        setText("strBestName", top3[0].name);
+    }
+}
+
+function renderAbandoned(skills, skillDates){
+    const listEl = document.getElementById("abandonedList");
+    if (!listEl) return;
+    const lastDate = skillDates.length ? new Date(skillDates[skillDates.length - 1]) : new Date();
+    const items = [];
+    Object.keys(skills || {}).forEach(key => {
+        const s = skills[key];
+        const solved = s.problems_solved || [];
+        const dates = s.dates || [];
+        if (!solved.length) return;
+        let lastIdx = 0, prev = 0;
+        solved.forEach((v,i)=>{ if (v > prev) lastIdx = i; prev = v; });
+        const lastActive = dates[lastIdx] ? new Date(dates[lastIdx]) : null;
+        const days = lastActive ? Math.max(0, Math.round((lastDate - lastActive) / 86400000)) : null;
+        items.push({ name: s.tag_name, solved: solved[solved.length - 1], days });
+    });
+    items.sort((a,b)=> (b.days === null ? 0 : b.days) - (a.days === null ? 0 : a.days));
+    const stale = items.filter(it => it.days && it.days > 0);
+    const top5 = (stale.length ? stale : items).slice(0, 5);
+    if (!top5.length){
+        listEl.innerHTML = "<div style='opacity:.7;padding:12px 0;'>Пока нет данных по ежедневным снапшотам навыков</div>";
+        return;
+    }
+    listEl.innerHTML = top5.map(it => {
+        const d = it.days === null ? 0 : it.days;
+        return "<div class='abandoned-item'><span class='abandoned-name'>" + it.name + "</span>" +
+            "<span class='abandoned-days'><b>" + d + "</b> " + ruPlural(d, ["день","дня","дней"]) + "</span></div>";
+    }).join("");
+}
+
+renderFocus();
 
 Chart.defaults.font.family = "'IBM Plex Mono', monospace";
 Chart.defaults.font.size = 11;
@@ -1411,6 +1843,9 @@ function renderDashboard(data){
     setText("skillFundamentalTotal", skillF);
     setText("skillIntermediateTotal", skillI);
     setText("skillAdvancedTotal", skillA);
+
+    renderStrength(skills);
+    renderAbandoned(skills, skillDates);
 
     const skillBars = document.querySelectorAll(".skill-bar-fill[data-target]");
     skillBars.forEach(bar => {
