@@ -241,6 +241,7 @@ body{
 .theme-11::before{ background:radial-gradient(circle at 50% 30%, #1E6B4A 0%, transparent 60%); }
 .theme-12::before{ background:radial-gradient(circle at 60% 25%, #2E5B41 0%, transparent 60%); }
 .theme-13::before{ background:radial-gradient(circle at 40% 70%, #6B4A2E 0%, transparent 60%); }
+.theme-14::before{ background:radial-gradient(circle at 50% 35%, #1F4E6B 0%, transparent 60%); }
 
 .hero-number{
     font-family:var(--font-mono);
@@ -804,6 +805,43 @@ body{
 .focus-text b{ color:var(--ink); font-weight:600; }
 .focus-text .focus-gain{ color:var(--easy); font-weight:700; }
 
+/* ---------- consistency ---------- */
+
+.consist-hero{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+}
+
+.consist-score{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:min(18vw,110px);
+    line-height:1;
+    letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+    color:var(--gold);
+}
+
+.consist-tag{
+    font-family:var(--font-mono);
+    font-size:13px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+}
+
+.consist-verdict{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+    text-align:center;
+}
+
+.consist-verdict b{ color:var(--ink); font-weight:600; }
+
 @media (prefers-reduced-motion: reduce){
     .hero-hint .arrow{ animation:none; }
     .wrapped-scroll{ scroll-behavior:auto; }
@@ -1132,6 +1170,53 @@ body{
     </div>
 </section>
 
+<section class="slide theme-14">
+    <div class="slide-inner" style="max-width:680px;">
+        <div class="eyebrow">Consistency Analyzer</div>
+        <div class="headline">Consistency</div>
+        <div class="sub" id="consistSub">загрузка…</div>
+
+        <div class="win" style="margin-top:22px;">
+            <div class="win-bar"><span></span><span></span><span></span></div>
+            <div class="win-body">
+                <div class="consist-hero">
+                    <div class="consist-score" id="consistScore">0%</div>
+                    <div class="consist-tag" id="consistTag">—</div>
+                </div>
+
+                <div class="heatmap-wrap" style="margin-top:22px;">
+                    <div class="heatmap-days">
+                        <span>Пн</span><span></span><span>Ср</span><span></span><span>Пт</span><span></span><span>Вс</span>
+                    </div>
+                    <div class="heatmap-grid" id="consistGrid"></div>
+                </div>
+                <div class="heat-legend">
+                    <span>меньше</span>
+                    <span class="hcell h0"></span>
+                    <span class="hcell h1"></span>
+                    <span class="hcell h2"></span>
+                    <span class="hcell h3"></span>
+                    <span class="hcell h4"></span>
+                    <span>больше</span>
+                </div>
+
+                <div class="stat-strip">
+                    <div><div class="num" id="curStreakNum">0</div><div class="lbl">текущая серия</div></div>
+                    <div><div class="num" id="bestStreakNum2">0</div><div class="lbl">лучшая серия</div></div>
+                    <div><div class="num" id="consistActiveDays">0</div><div class="lbl">активных дней</div></div>
+                </div>
+
+                <div class="chart-box" style="height:140px; margin-top:18px;"><canvas id="consistChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="insight-card">
+            <div class="ic-num" id="consistIcn">—</div>
+            <div class="ic-text" id="consistInterp">—</div>
+        </div>
+    </div>
+</section>
+
 <section class="slide theme-8">
     <div class="slide-inner">
         <div class="eyebrow">Итоги</div>
@@ -1345,6 +1430,106 @@ function renderAbandoned(skills, skillDates){
         return "<div class='abandoned-item'><span class='abandoned-name'>" + it.name + "</span>" +
             "<span class='abandoned-days'><b>" + d + "</b> " + ruPlural(d, ["день","дня","дней"]) + "</span></div>";
     }).join("");
+}
+
+function renderConsistency(dates, deltaTotal){
+    const grid = document.getElementById("consistGrid");
+    const chartEl = document.getElementById("consistChart");
+    if (!grid || !dates.length) return;
+
+    const totalDays = dates.length;
+    let activeDays = 0;
+    deltaTotal.forEach(v => { if (v > 0) activeDays++; });
+
+    let curStreak = 0;
+    for (let i = deltaTotal.length - 1; i >= 0; i--){
+        if (deltaTotal[i] > 0) curStreak++;
+        else break;
+    }
+
+    let bestStreak = 0, run = 0;
+    deltaTotal.forEach(v => { run = v > 0 ? run + 1 : 0; bestStreak = Math.max(bestStreak, run); });
+
+    const firstOffset = mondayIndex(dates[0]);
+    const weekActive = [];
+    const weekSums = [];
+    dates.forEach((d, i) => {
+        const wi = Math.floor((i + firstOffset) / 7);
+        if (!weekActive[wi]){ weekActive[wi] = 0; weekSums[wi] = 0; }
+        if (deltaTotal[i] > 0) weekActive[wi]++;
+        weekSums[wi] += deltaTotal[i];
+    });
+
+    const activeRatio = totalDays ? activeDays / totalDays : 0;
+    const avgWeek = weekActive.length ? weekActive.reduce((a,b)=>a+b,0) / weekActive.length : 0;
+    const weekRatio = avgWeek / 7;
+    const score = Math.round(100 * (0.6 * activeRatio + 0.4 * weekRatio));
+
+    let tag, verdict;
+    if (score >= 75){ tag = "Highly Consistent"; verdict = "Ты занимаешься стабильно и почти без пропусков."; }
+    else if (score >= 55){ tag = "Consistent"; verdict = "Ритм устойчивый, но бывают паузы."; }
+    else if (score >= 35){ tag = "Irregular"; verdict = "Активность идёт волнами — всплески сменяются простоями."; }
+    else { tag = "Bursty"; verdict = "Занимаешься урывками — но зато интенсивно."; }
+
+    setText("consistScore", score + "%");
+    setText("consistTag", tag);
+    setText("curStreakNum", curStreak);
+    setText("bestStreakNum2", bestStreak);
+    setText("consistActiveDays", activeDays);
+    setText("consistIcn", score >= 55 ? "✓" : "!");
+    const interpEl = document.getElementById("consistInterp");
+    if (interpEl) interpEl.innerHTML = verdict;
+
+    const tooltip = document.getElementById("heatTooltip");
+    const maxDelta = Math.max(1, ...deltaTotal);
+    for (let i = 0; i < firstOffset; i++){
+        const pad = document.createElement("div");
+        pad.className = "hcell h0";
+        pad.style.visibility = "hidden";
+        grid.appendChild(pad);
+    }
+    dates.forEach((d, i) => {
+        const count = deltaTotal[i];
+        const ratio = count / maxDelta;
+        let level = 0;
+        if (count > 0) level = ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+        const cell = document.createElement("div");
+        cell.className = "hcell h" + level;
+        cell.dataset.date = d;
+        cell.dataset.count = count;
+        cell.addEventListener("mousemove", (e)=>{
+            tooltip.innerHTML = fmtDate(d) + ": <b>+" + count + "</b> " + ruPlural(count, ["задача","задачи","задач"]);
+            tooltip.style.left = e.clientX + "px";
+            tooltip.style.top = e.clientY + "px";
+            tooltip.classList.add("show");
+        });
+        cell.addEventListener("mouseleave", ()=> tooltip.classList.remove("show"));
+        grid.appendChild(cell);
+    });
+
+    if (chartEl && weekSums.length){
+        const maxWeek = Math.max(...weekSums);
+        const wdColors = weekSums.map(v => v === maxWeek ? "#E8C468" : "rgba(244,246,242,.18)");
+        new Chart(chartEl, {
+            type:"bar",
+            data:{
+                labels: weekSums.map((_, i)=> "Н" + (i+1)),
+                datasets:[{ data: weekSums, backgroundColor: wdColors, borderRadius:4, maxBarThickness:22 }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                plugins:{
+                    legend:{ display:false },
+                    tooltip:{ callbacks:{ label:(it)=> "+" + it.parsed.y + " " + ruPlural(it.parsed.y, ["задача","задачи","задач"]) } }
+                },
+                scales:{
+                    x:{ grid:{ display:false }, ticks:{ maxTicksLimit:10, font:{ size:9 } } },
+                    y:{ grid:{ color:"rgba(244,246,242,.08)" }, beginAtZero:true, ticks:{ display:false } }
+                }
+            }
+        });
+    }
 }
 
 renderFocus();
@@ -1846,6 +2031,7 @@ function renderDashboard(data){
 
     renderStrength(skills);
     renderAbandoned(skills, skillDates);
+    renderConsistency(dates, deltaTotal);
 
     const skillBars = document.querySelectorAll(".skill-bar-fill[data-target]");
     skillBars.forEach(bar => {
